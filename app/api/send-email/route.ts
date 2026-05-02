@@ -12,23 +12,151 @@ export async function POST(req: Request) {
       return Response.json({ error: 'Email service not configured. Missing RESEND_API_KEY' }, { status: 500 })
     }
 
-    const results = []
+    // Group emails by recipient to consolidate multiple assignments
+    const emailsByRecipient = new Map<string, { 
+      name: string
+      deceasedName: string
+      assignments: { institutionName: string; deadlineDays: number; letter: string }[]
+    }>()
 
     for (const email of emails) {
       const { to, name, institutionName, deadlineDays, deceasedName, letter } = email
+      
+      if (!to || !to.includes('@')) continue
 
-      if (!to || !to.includes('@')) {
-        results.push({ to, name, success: false, error: 'Invalid email address' })
-        continue
+      if (emailsByRecipient.has(to)) {
+        emailsByRecipient.get(to)!.assignments.push({ institutionName, deadlineDays, letter })
+      } else {
+        emailsByRecipient.set(to, {
+          name,
+          deceasedName,
+          assignments: [{ institutionName, deadlineDays, letter }]
+        })
       }
+    }
+
+    const results = []
+
+    for (const [to, data] of emailsByRecipient) {
+      const { name, deceasedName, assignments } = data
+
+      // Sort assignments by deadline (most urgent first)
+      assignments.sort((a, b) => a.deadlineDays - b.deadlineDays)
+
+      // Build assignment sections
+      const assignmentSections = assignments.map(a => {
+        const isUrgent = a.deadlineDays > 0 && a.deadlineDays < 14
+        const isWarning = a.deadlineDays >= 14 && a.deadlineDays < 60
+        const badgeColor = isUrgent ? '#dc2626' : isWarning ? '#d97706' : '#059669'
+        const badgeBg = isUrgent ? '#fef2f2' : isWarning ? '#fffbeb' : '#ecfdf5'
+        
+        // Calculate deadline date for calendar link
+        const deadlineDate = new Date()
+        deadlineDate.setDate(deadlineDate.getDate() + a.deadlineDays)
+        const calendarDate = deadlineDate.toISOString().split('T')[0].replace(/-/g, '')
+        const calendarTitle = encodeURIComponent(`Send ${a.institutionName} letter`)
+        const calendarDetails = encodeURIComponent(`Letter for ${deceasedName}`)
+        const calendarLink = `https://www.google.com/calendar/render?action=TEMPLATE&text=${calendarTitle}&dates=${calendarDate}/${calendarDate}&details=${calendarDetails}`
+
+        const deadlineText = a.deadlineDays === 0 
+          ? 'When ready' 
+          : a.deadlineDays === 1 
+            ? '1 day' 
+            : `${a.deadlineDays} days`
+
+        return `
+          <div style="margin-bottom: 32px; border: 1px solid #e5e5e5; border-radius: 12px; overflow: hidden;">
+            <div style="padding: 16px 20px; background: #fafafa; border-bottom: 1px solid #e5e5e5;">
+              <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                <tr>
+                  <td>
+                    <span style="font-size: 18px; font-weight: 600; color: #171717;">${a.institutionName}</span>
+                  </td>
+                  <td align="right">
+                    ${a.deadlineDays > 0 ? `
+                      <span style="display: inline-block; padding: 4px 12px; background: ${badgeBg}; color: ${badgeColor}; font-size: 13px; font-weight: 500; border-radius: 20px;">
+                        ${deadlineText}
+                      </span>
+                    ` : `
+                      <span style="display: inline-block; padding: 4px 12px; background: #f3f4f6; color: #6b7280; font-size: 13px; font-weight: 500; border-radius: 20px;">
+                        When ready
+                      </span>
+                    `}
+                  </td>
+                </tr>
+              </table>
+            </div>
+            <div style="padding: 20px;">
+              <pre style="background: #f9fafb; padding: 16px; border-radius: 8px; white-space: pre-wrap; font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.6; color: #374151; margin: 0; overflow-x: auto;">${a.letter}</pre>
+              ${a.deadlineDays > 0 ? `
+                <div style="margin-top: 16px;">
+                  <a href="${calendarLink}" target="_blank" style="display: inline-block; padding: 10px 16px; background: #171717; color: #ffffff; text-decoration: none; font-size: 13px; font-weight: 500; border-radius: 6px;">
+                    Add to Calendar
+                  </a>
+                </div>
+              ` : ''}
+            </div>
+          </div>
+        `
+      }).join('')
+
+      const taskCount = assignments.length
+      const subject = taskCount === 1 
+        ? `You're handling ${assignments[0].institutionName} for ${deceasedName}`
+        : `You're handling ${taskCount} tasks for ${deceasedName}`
 
       const htmlBody = `
-        <p>Hi ${name},</p>
-        <p>You've been assigned to handle <b>${institutionName}</b> for ${deceasedName}.</p>
-        <p><b>Deadline: ${deadlineDays} days</b></p>
-        <p>Here's your letter:</p>
-        <pre style="background: #f5f5f5; padding: 16px; border-radius: 8px; white-space: pre-wrap; font-family: monospace; font-size: 13px;">${letter}</pre>
-        <p>— Aftermath</p>
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        </head>
+        <body style="margin: 0; padding: 0; background-color: #FAF7F2; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+          <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #FAF7F2;">
+            <tr>
+              <td align="center" style="padding: 40px 20px;">
+                <table cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width: 600px; background: #ffffff; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                  <!-- Header -->
+                  <tr>
+                    <td style="padding: 32px 32px 24px; border-bottom: 1px solid #e5e5e5;">
+                      <div style="font-family: Georgia, 'Times New Roman', serif; font-size: 24px; font-weight: 400; color: #171717; margin-bottom: 8px;">
+                        Aftermath
+                      </div>
+                      <div style="font-size: 14px; color: #737373;">
+                        Handling affairs for <strong style="color: #171717;">${deceasedName}</strong>
+                      </div>
+                    </td>
+                  </tr>
+                  
+                  <!-- Content -->
+                  <tr>
+                    <td style="padding: 32px;">
+                      <p style="margin: 0 0 24px; font-size: 16px; line-height: 1.6; color: #374151;">
+                        Hi ${name},
+                      </p>
+                      <p style="margin: 0 0 32px; font-size: 16px; line-height: 1.6; color: #374151;">
+                        You've been assigned ${taskCount === 1 ? 'a task' : `${taskCount} tasks`} to help with ${deceasedName}'s estate. Each letter below is ready to send — just copy, print, and mail.
+                      </p>
+                      
+                      ${assignmentSections}
+                    </td>
+                  </tr>
+                  
+                  <!-- Footer -->
+                  <tr>
+                    <td style="padding: 24px 32px; background: #fafafa; border-top: 1px solid #e5e5e5; border-radius: 0 0 16px 16px;">
+                      <p style="margin: 0; font-size: 13px; color: #737373; text-align: center;">
+                        Sent by <strong>Aftermath</strong> — handling what comes after
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </body>
+        </html>
       `
 
       try {
@@ -41,26 +169,27 @@ export async function POST(req: Request) {
           body: JSON.stringify({
             from: 'Aftermath <aftermath@resend.dev>',
             to: [to],
-            subject: `You're handling ${institutionName} for ${deceasedName}`,
+            subject,
             html: htmlBody,
           }),
         })
 
-        const data = await response.json()
+        const responseData = await response.json()
 
         if (!response.ok) {
           results.push({
             to,
             name,
             success: false,
-            error: data.message || data.error || 'Failed to send email',
+            error: responseData.message || responseData.error || 'Failed to send email',
           })
         } else {
           results.push({
             to,
             name,
             success: true,
-            emailId: data.id,
+            emailId: responseData.id,
+            assignmentCount: assignments.length,
           })
         }
       } catch (err) {
