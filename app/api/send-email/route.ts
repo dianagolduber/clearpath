@@ -18,49 +18,35 @@ export async function POST(req: Request) {
     const results = []
 
     for (const email of emails) {
-      // Support both old format (single assignment) and new format (tasks array)
-      const { to, name, deceasedName, tasks, institutionName, deadlineDays, letter } = email
+      const { to, name, deceasedName, tasks } = email
       
       if (!to || !to.includes('@')) continue
+      if (!tasks || tasks.length === 0) continue
 
-      // Build assignments array from either format
-      const assignments: { institutionName: string; deadlineDays: number; letter: string }[] = 
-        tasks && Array.isArray(tasks) 
-          ? tasks 
-          : institutionName 
-            ? [{ institutionName, deadlineDays: deadlineDays || 0, letter: letter || '' }]
-            : []
+      // Create portal link with all assignments encoded
+      const portalData = {
+        familyMemberName: name,
+        deceasedName,
+        assignments: tasks.map((t: any) => ({
+          institutionName: t.institutionName,
+          deadlineDays: t.deadlineDays,
+          letter: t.letter,
+        })),
+      }
 
-      if (assignments.length === 0) continue
+      const encodedData = encodeURIComponent(btoa(JSON.stringify(portalData)))
+      const portalUrl = `${siteUrl}/letter/${encodedData}`
 
       // Sort assignments by deadline (most urgent first)
-      assignments.sort((a, b) => a.deadlineDays - b.deadlineDays)
+      const sortedAssignments = [...portalData.assignments].sort((a, b) => a.deadlineDays - b.deadlineDays)
 
-      // Build assignment sections
-      const assignmentSections = assignments.map(a => {
+      // Build assignment preview sections for email
+      const assignmentSections = sortedAssignments.map(a => {
         const isUrgent = a.deadlineDays > 0 && a.deadlineDays < 14
         const isWarning = a.deadlineDays >= 14 && a.deadlineDays < 60
         const badgeColor = isUrgent ? '#dc2626' : isWarning ? '#d97706' : '#059669'
         const badgeBg = isUrgent ? '#fef2f2' : isWarning ? '#fffbeb' : '#ecfdf5'
         
-        // Calculate deadline date for calendar link
-        const deadlineDate = new Date()
-        deadlineDate.setDate(deadlineDate.getDate() + a.deadlineDays)
-        const calendarDate = deadlineDate.toISOString().split('T')[0].replace(/-/g, '')
-        const calendarTitle = encodeURIComponent(`Send ${a.institutionName} letter`)
-        const calendarDetails = encodeURIComponent(`Letter for ${deceasedName}`)
-        const calendarLink = `https://www.google.com/calendar/render?action=TEMPLATE&text=${calendarTitle}&dates=${calendarDate}/${calendarDate}&details=${calendarDetails}`
-
-        // Generate letter URL with encoded data
-        const letterData = {
-          institutionName: a.institutionName,
-          deadlineDays: a.deadlineDays,
-          letter: a.letter,
-          deceasedName,
-        }
-        const encodedData = encodeURIComponent(btoa(JSON.stringify(letterData)))
-        const letterUrl = `${siteUrl}/letter/${encodedData}`
-
         const deadlineText = a.deadlineDays === 0 
           ? 'When ready' 
           : a.deadlineDays === 1 
@@ -68,53 +54,21 @@ export async function POST(req: Request) {
             : `${a.deadlineDays} days`
 
         return `
-          <div style="margin-bottom: 24px; border: 1px solid #e5e5e5; border-radius: 12px; overflow: hidden;">
-            <div style="padding: 20px; background: #fafafa;">
-              <table cellpadding="0" cellspacing="0" border="0" width="100%">
-                <tr>
-                  <td>
-                    <span style="font-size: 18px; font-weight: 600; color: #171717;">${a.institutionName}</span>
-                  </td>
-                  <td align="right">
-                    ${a.deadlineDays > 0 ? `
-                      <span style="display: inline-block; padding: 4px 12px; background: ${badgeBg}; color: ${badgeColor}; font-size: 13px; font-weight: 500; border-radius: 20px;">
-                        ${deadlineText}
-                      </span>
-                    ` : `
-                      <span style="display: inline-block; padding: 4px 12px; background: #f3f4f6; color: #6b7280; font-size: 13px; font-weight: 500; border-radius: 20px;">
-                        When ready
-                      </span>
-                    `}
-                  </td>
-                </tr>
-              </table>
-              
-              <p style="margin: 16px 0 20px; font-size: 14px; color: #6b7280; line-height: 1.5;">
-                Your letter is ready. Click below to view, edit, and copy it.
-              </p>
-              
-              <table cellpadding="0" cellspacing="0" border="0">
-                <tr>
-                  <td style="padding-right: 12px;">
-                    <a href="${letterUrl}" target="_blank" style="display: inline-block; padding: 12px 24px; background: #171717; color: #ffffff; text-decoration: none; font-size: 14px; font-weight: 500; border-radius: 8px;">
-                      View &amp; Edit Your Letter &rarr;
-                    </a>
-                  </td>
-                  ${a.deadlineDays > 0 ? `
-                    <td>
-                      <a href="${calendarLink}" target="_blank" style="display: inline-block; padding: 12px 20px; background: #ffffff; color: #171717; text-decoration: none; font-size: 14px; font-weight: 500; border-radius: 8px; border: 1px solid #e5e5e5;">
-                        Add to Calendar
-                      </a>
-                    </td>
-                  ` : ''}
-                </tr>
-              </table>
+          <div style="margin-bottom: 20px; padding: 16px; background: #fafafa; border-radius: 8px; border-left: 4px solid ${badgeColor};">
+            <div style="font-weight: 600; color: #171717; margin-bottom: 6px;">
+              ${a.institutionName}
+            </div>
+            <div style="font-size: 13px; color: #6b7280;">
+              Deadline: 
+              <span style="display: inline-block; padding: 2px 8px; background: ${badgeBg}; color: ${badgeColor}; border-radius: 12px; font-weight: 500;">
+                ${deadlineText}
+              </span>
             </div>
           </div>
         `
       }).join('')
 
-      const taskCount = assignments.length
+      const taskCount = portalData.assignments.length
       const subject = `Your tasks for ${deceasedName}'s estate`
 
       const htmlBody = `
@@ -148,10 +102,25 @@ export async function POST(req: Request) {
                         Hi ${name},
                       </p>
                       <p style="margin: 0 0 32px; font-size: 16px; line-height: 1.6; color: #374151;">
-                        You've been assigned ${taskCount === 1 ? 'a task' : `${taskCount} tasks`} to help with ${deceasedName}'s estate. Each letter below is ready — click to view, edit, and copy.
+                        You've been assigned ${taskCount === 1 ? 'a task' : `${taskCount} tasks`} to help with ${deceasedName}'s estate. Click the button below to access your personalized portal where you can view, edit, and track each letter.
                       </p>
                       
-                      ${assignmentSections}
+                      <div style="margin: 32px 0; text-align: center;">
+                        <a href="${portalUrl}" target="_blank" style="display: inline-block; padding: 14px 32px; background: #171717; color: #ffffff; text-decoration: none; font-size: 15px; font-weight: 600; border-radius: 8px;">
+                          Access Your Portal &rarr;
+                        </a>
+                      </div>
+                      
+                      <div style="margin-top: 32px; padding: 20px; background: #fafafa; border-radius: 8px; border: 1px solid #e5e5e5;">
+                        <div style="font-weight: 600; color: #171717; margin-bottom: 12px; font-size: 14px;">
+                          Your tasks:
+                        </div>
+                        ${assignmentSections}
+                      </div>
+                      
+                      <p style="margin: 24px 0 0; font-size: 13px; color: #6b7280; line-height: 1.6;">
+                        In your portal, you can review each letter, make any necessary changes, and mark tasks as sent when complete.
+                      </p>
                     </td>
                   </tr>
                   
@@ -201,7 +170,7 @@ export async function POST(req: Request) {
             name,
             success: true,
             emailId: responseData.id,
-            assignmentCount: assignments.length,
+            assignmentCount: tasks.length,
           })
         }
       } catch (err) {
