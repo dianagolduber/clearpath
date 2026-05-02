@@ -226,20 +226,43 @@ export function InstitutionCards({ institutions, onVerify, onStartOver }: Instit
   const sentCount = sentIndices.size
   const remaining = institutions.length - sentCount
 
+  const total = institutions.length
+  const progressPct = total > 0 ? (sentCount / total) * 100 : 0
+
   return (
     <div className="w-full max-w-3xl mx-auto">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
           <h2 className="font-serif text-2xl sm:text-3xl text-foreground mb-1">
             Your Action Items
           </h2>
-          <p className="text-muted-foreground">
-            {remaining} remaining &mdash; {sentCount} sent
-          </p>
         </div>
         <Button variant="outline" onClick={onStartOver}>
           Start Over
         </Button>
+      </div>
+
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-sm text-muted-foreground">
+            <span className="font-medium text-foreground">{sentCount} of {total}</span> notifications sent
+          </span>
+          <span className="text-sm text-muted-foreground">{remaining} remaining</span>
+        </div>
+        <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+          <div
+            className="h-full rounded-full transition-all duration-500 ease-out"
+            style={{
+              width: `${progressPct}%`,
+              backgroundColor: 'var(--color-primary)',
+            }}
+            role="progressbar"
+            aria-valuenow={sentCount}
+            aria-valuemin={0}
+            aria-valuemax={total}
+            aria-label={`${sentCount} of ${total} notifications sent`}
+          />
+        </div>
       </div>
       
       <div className="flex flex-col gap-4">
