@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { InputForm, type FormData } from '@/components/input-form'
 import { InstitutionCards } from '@/components/institution-cards'
-import { FamilyAssignment } from '@/components/family-assignment'
 import type { Institution, MemorialItem } from '@/lib/types'
 
 export default function Home() {
