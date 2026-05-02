@@ -52,6 +52,7 @@ function InstitutionCard({
   const [isVerifying, setIsVerifying] = useState(false)
   const [verifyError, setVerifyError] = useState<string | null>(null)
   const [sources, setSources] = useState<string[]>([])
+  const [copyText, setCopyText] = useState('Copy Letter')
 
   const handleVerify = async () => {
     setIsVerifying(true)
@@ -63,6 +64,18 @@ function InstitutionCard({
       setVerifyError(err instanceof Error ? err.message : 'Verification failed')
     } finally {
       setIsVerifying(false)
+    }
+  }
+
+  const handleCopyLetter = async () => {
+    try {
+      await navigator.clipboard.writeText(institution.letter)
+      setCopyText('Copied!')
+      setTimeout(() => setCopyText('Copy Letter'), 2000)
+    } catch (err) {
+      console.error('Failed to copy letter:', err)
+      setCopyText('Copy Failed')
+      setTimeout(() => setCopyText('Copy Letter'), 2000)
     }
   }
 
@@ -143,10 +156,10 @@ function InstitutionCard({
               
               <Button
                 variant="outline"
-                onClick={() => navigator.clipboard.writeText(institution.letter)}
+                onClick={handleCopyLetter}
                 className="flex-1 sm:flex-none"
               >
-                Copy Letter
+                {copyText}
               </Button>
             </div>
             
