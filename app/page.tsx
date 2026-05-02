@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { InputForm, type FormData } from '@/components/input-form'
 import { InstitutionCards } from '@/components/institution-cards'
+import { FamilyAssignment } from '@/components/family-assignment'
 import type { Institution, MemorialItem } from '@/lib/types'
 
 export default function Home() {
@@ -11,6 +12,7 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [userDescription, setUserDescription] = useState('')
+  const [deceasedName, setDeceasedName] = useState('')
 
   const handleSubmit = async (data: FormData) => {
     // Build a natural-language description from structured fields
@@ -26,6 +28,7 @@ export default function Home() {
     setIsLoading(true)
     setError(null)
     setUserDescription(description)
+    setDeceasedName(fullName)
     
     try {
       const response = await fetch('/api/generate', {
@@ -88,6 +91,7 @@ export default function Home() {
     setInstitutions([])
     setMemorialItems([])
     setUserDescription('')
+    setDeceasedName('')
     setError(null)
   }
 
@@ -119,6 +123,7 @@ export default function Home() {
             memorialItems={memorialItems}
             onVerify={handleVerify}
             onStartOver={handleStartOver}
+            deceasedName={deceasedName}
           />
         )}
       </div>

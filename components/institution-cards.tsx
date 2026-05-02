@@ -13,12 +13,14 @@ import {
 import { ChevronDown, ChevronUp, CheckCircle2, AlertCircle } from 'lucide-react'
 import type { Institution, MemorialItem } from '@/lib/types'
 import { Textarea } from '@/components/ui/textarea'
+import { FamilyAssignment } from './family-assignment'
 
 interface InstitutionCardsProps {
   institutions: Institution[]
   memorialItems: MemorialItem[]
   onVerify: (institutionName: string, index: number) => Promise<{ refinedLetter: string; sources: string[] }>
   onStartOver: () => void
+  deceasedName: string
 }
 
 const MEMORIAL_LABELS: Record<MemorialItem['type'], string> = {
@@ -345,7 +347,7 @@ function InstitutionCard({
   )
 }
 
-export function InstitutionCards({ institutions, memorialItems, onVerify, onStartOver }: InstitutionCardsProps) {
+export function InstitutionCards({ institutions, memorialItems, onVerify, onStartOver, deceasedName }: InstitutionCardsProps) {
   const [sentIndices, setSentIndices] = useState<Set<number>>(new Set())
 
   const handleMarkSent = (index: number) => {
@@ -403,6 +405,11 @@ export function InstitutionCards({ institutions, memorialItems, onVerify, onStar
           />
         </div>
       </div>
+
+      {/* Family Assignment Section */}
+      {institutions.length > 0 && deceasedName && (
+        <FamilyAssignment institutions={institutions} deceasedName={deceasedName} />
+      )}
       
       <div className="flex flex-col gap-4">
         {ordered.map(({ inst, i }) => (
