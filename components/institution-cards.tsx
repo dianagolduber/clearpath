@@ -11,6 +11,7 @@ import {
   CollapsibleTrigger 
 } from '@/components/ui/collapsible'
 import { ChevronDown, ChevronUp, CheckCircle2, AlertCircle } from 'lucide-react'
+import { Checkbox } from '@/components/ui/checkbox'
 import type { Institution, MemorialItem } from '@/lib/types'
 import { Textarea } from '@/components/ui/textarea'
 import { FamilyAssignment } from './family-assignment'
@@ -27,6 +28,85 @@ const MEMORIAL_LABELS: Record<MemorialItem['type'], string> = {
   funeral_home: 'Funeral Home Notification',
   obituary: 'Obituary Draft',
   eulogy_opening: 'Eulogy Opening',
+}
+
+const FUNERAL_CHECKLIST_ITEMS = [
+  'Choose funeral home',
+  'Decide burial vs cremation',
+  'Set date and time of service',
+  'Notify close family and friends',
+  'Write and submit obituary',
+  'Choose flowers and music',
+  'Arrange transportation',
+  'Plan reception/gathering',
+  'Thank you notes to attendees',
+  'Order death certificates (get 10+ copies)',
+]
+
+function FuneralChecklist() {
+  const [checkedItems, setCheckedItems] = useState<Set<number>>(new Set())
+
+  const toggleItem = (index: number) => {
+    setCheckedItems(prev => {
+      const next = new Set(prev)
+      if (next.has(index)) {
+        next.delete(index)
+      } else {
+        next.add(index)
+      }
+      return next
+    })
+  }
+
+  const completedCount = checkedItems.size
+  const totalCount = FUNERAL_CHECKLIST_ITEMS.length
+
+  return (
+    <Card className="bg-card border-border">
+      <CardHeader className="pb-3">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+          <div className="flex-1">
+            <CardTitle className="font-serif text-xl text-foreground">
+              Funeral Checklist
+            </CardTitle>
+            <p className="text-sm text-muted-foreground mt-1">
+              {completedCount} of {totalCount} tasks complete
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Badge className="bg-[#ede9fe] text-[#5b21b6] border border-[#ddd6fe] font-medium">
+              Memorial
+            </Badge>
+            <span className="text-sm text-muted-foreground whitespace-nowrap">When ready</span>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-3">
+          {FUNERAL_CHECKLIST_ITEMS.map((item, index) => (
+            <label
+              key={index}
+              className="flex items-center gap-3 cursor-pointer group"
+            >
+              <Checkbox
+                checked={checkedItems.has(index)}
+                onCheckedChange={() => toggleItem(index)}
+              />
+              <span
+                className={`text-sm transition-all ${
+                  checkedItems.has(index)
+                    ? 'text-muted-foreground line-through'
+                    : 'text-foreground group-hover:text-primary'
+                }`}
+              >
+                {item}
+              </span>
+            </label>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  )
 }
 
 function MemorialCard({ item }: { item: MemorialItem }) {
@@ -436,6 +516,7 @@ export function InstitutionCards({ institutions, memorialItems, onVerify, onStar
             <p className="text-muted-foreground text-sm">Drafts to help you honor your loved one — complete when you are ready.</p>
           </div>
           <div className="flex flex-col gap-4">
+            <FuneralChecklist />
             {memorialItems.map((item) => (
               <MemorialCard key={item.type} item={item} />
             ))}
