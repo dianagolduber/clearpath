@@ -1,7 +1,7 @@
 export async function POST(req: Request) {
   try {
     const body = await req.json()
-    const { emails, baseUrl } = body
+    const { emails } = body
 
     if (!emails || !Array.isArray(emails) || emails.length === 0) {
       return Response.json({ error: 'No emails to send' }, { status: 400 })
@@ -12,8 +12,8 @@ export async function POST(req: Request) {
       return Response.json({ error: 'Email service not configured. Missing RESEND_API_KEY' }, { status: 500 })
     }
 
-    // Use provided baseUrl or default to production
-    const siteUrl = baseUrl || 'https://aftermath.vercel.app'
+    // Use NEXT_PUBLIC_URL from environment for production URL
+    const siteUrl = process.env.NEXT_PUBLIC_URL || 'https://v0-aftermath.vercel.app'
 
     const results = []
 
