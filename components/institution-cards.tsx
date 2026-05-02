@@ -608,7 +608,7 @@ export function InstitutionCards({ institutions, memorialItems, onVerify, onStar
             onVerify={onVerify}
             onMarkSent={handleMarkSent}
             deceasedName={deceasedName}
-            onSendSms={handleSendSms}
+            onSendEmail={handleSendEmail}
           />
         ))}
       </div>
