@@ -5,6 +5,13 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
 import { Field, FieldGroup, FieldLabel } from '@/components/ui/field'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 
 const US_STATES = [
@@ -35,7 +42,7 @@ export function InputForm({ onSubmit, isLoading }: InputFormProps) {
   const [form, setForm] = useState<FormData>({
     firstName: '',
     lastName: '',
-    state: 'Arizona',
+    state: '',
     dateOfPassing: '',
     knownAccounts: '',
   })
@@ -44,7 +51,7 @@ export function InputForm({ onSubmit, isLoading }: InputFormProps) {
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => setForm(prev => ({ ...prev, [key]: e.target.value }))
 
-  const canSubmit = form.firstName.trim() && !isLoading
+  const canSubmit = form.firstName.trim() && form.state && !isLoading
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -92,11 +99,22 @@ export function InputForm({ onSubmit, isLoading }: InputFormProps) {
           <FieldGroup>
             <Field>
               <FieldLabel htmlFor="state">
-                State of residence
+                State of residence <span className="text-destructive">*</span>
               </FieldLabel>
-              <div className="px-3 py-2 bg-muted border border-border rounded-md text-foreground">
-                Arizona
-              </div>
+              <Select
+                value={form.state}
+                onValueChange={val => setForm(prev => ({ ...prev, state: val }))}
+                disabled={isLoading}
+              >
+                <SelectTrigger id="state">
+                  <SelectValue placeholder="Select a state" />
+                </SelectTrigger>
+                <SelectContent>
+                  {US_STATES.map(s => (
+                    <SelectItem key={s} value={s}>{s}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </Field>
           </FieldGroup>
           <FieldGroup>
