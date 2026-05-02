@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Spinner } from '@/components/ui/spinner'
+import { Skeleton } from '@/components/ui/skeleton'
 import { Input } from '@/components/ui/input'
 import { 
   Collapsible, 
@@ -36,6 +37,55 @@ const MEMORIAL_LABELS: Record<MemorialItem['type'], string> = {
   funeral_home: 'Funeral Home Notification',
   obituary: 'Obituary Draft',
   eulogy_opening: 'Eulogy Opening',
+}
+
+// Skeleton loading cards shown during streaming
+export function SkeletonCards() {
+  return (
+    <div className="w-full max-w-3xl mx-auto">
+      <div className="mb-8">
+        <Skeleton className="h-10 w-64 mb-2" />
+        <Skeleton className="h-5 w-48" />
+      </div>
+      
+      <div className="mb-6">
+        <div className="flex items-center justify-between mb-2">
+          <Skeleton className="h-4 w-40" />
+          <Skeleton className="h-4 w-24" />
+        </div>
+        <Skeleton className="h-2 w-full rounded-full" />
+      </div>
+
+      <div className="flex flex-col gap-4">
+        {[1, 2, 3, 4, 5, 6].map((i) => (
+          <Card key={i} className="bg-card border-border animate-pulse">
+            <CardHeader className="pb-3">
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+                <div className="flex-1">
+                  <Skeleton className="h-6 w-48 mb-2" />
+                  <Skeleton className="h-4 w-24" />
+                </div>
+                <div className="flex items-center gap-2">
+                  <Skeleton className="h-6 w-16 rounded-full" />
+                  <Skeleton className="h-4 w-16" />
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <Skeleton className="h-10 w-full" />
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      <div className="mt-12 text-center">
+        <div className="inline-flex items-center gap-2 text-muted-foreground">
+          <div className="w-5 h-5 border-2 border-muted border-t-primary rounded-full animate-spin" />
+          <span>Generating your personalized letters...</span>
+        </div>
+      </div>
+    </div>
+  )
 }
 
 const FUNERAL_CHECKLIST_ITEMS = [
