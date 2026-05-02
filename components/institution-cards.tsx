@@ -42,11 +42,15 @@ function UrgencyBadge({ urgency }: { urgency: Institution['urgency'] }) {
 function InstitutionCard({ 
   institution, 
   index, 
-  onVerify 
+  sent,
+  onVerify,
+  onMarkSent,
 }: { 
   institution: Institution & { verified?: boolean }
   index: number
+  sent: boolean
   onVerify: (institutionName: string, index: number) => Promise<{ refinedLetter: string; sources: string[] }>
+  onMarkSent: (index: number) => void
 }) {
   const [isLetterOpen, setIsLetterOpen] = useState(false)
   const [isVerifying, setIsVerifying] = useState(false)
@@ -80,7 +84,7 @@ function InstitutionCard({
   }
 
   return (
-    <Card className="bg-card border-border">
+    <Card className={`bg-card border-border transition-opacity ${sent ? 'opacity-60' : ''}`}>
       <CardHeader className="pb-3">
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
           <div className="flex-1">
@@ -91,11 +95,16 @@ function InstitutionCard({
               {institution.verified && (
                 <CheckCircle2 className="h-5 w-5 text-green-600" aria-label="Verified with current law" />
               )}
+              {sent && (
+                <Badge className="bg-green-100 text-green-800 border border-green-200 font-medium">
+                  Sent ✓
+                </Badge>
+              )}
             </div>
             <p className="text-sm text-muted-foreground">{institution.category}</p>
           </div>
           <div className="flex items-center gap-2">
-            <UrgencyBadge urgency={institution.urgency} />
+            {!sent && <UrgencyBadge urgency={institution.urgency} />}
             <span className="text-sm text-muted-foreground whitespace-nowrap">
               {institution.deadlineDays} days
             </span>
@@ -132,7 +141,7 @@ function InstitutionCard({
               </pre>
             </div>
             
-            <div className="mt-4 flex flex-col sm:flex-row gap-2">
+            <div className="mt-4 flex flex-col sm:flex-row gap-2 flex-wrap">
               <Button
                 onClick={handleVerify}
                 disabled={isVerifying || institution.verified}
@@ -161,6 +170,16 @@ function InstitutionCard({
               >
                 {copyText}
               </Button>
+
+              {!sent && (
+                <Button
+                  variant="outline"
+                  onClick={() => onMarkSent(index)}
+                  className="flex-1 sm:flex-none border-green-300 text-green-800 hover:bg-green-50"
+                >
+                  Mark as sent
+                </Button>
+              )}
             </div>
             
             {verifyError && (
@@ -188,6 +207,25 @@ function InstitutionCard({
 }
 
 export function InstitutionCards({ institutions, onVerify, onStartOver }: InstitutionCardsProps) {
+  const [sentIndices, setSentIndices] = useState<Set<number>>(new Set())
+
+  const handleMarkSent = (index: number) => {
+    setSentIndices(prev => new Set(prev).add(index))
+  }
+
+  // Split into unsent (original order) and sent (appended at bottom)
+  const unsent = institutions
+    .map((inst, i) => ({ inst, i }))
+    .filter(({ i }) => !sentIndices.has(i))
+
+  const sent = institutions
+    .map((inst, i) => ({ inst, i }))
+    .filter(({ i }) => sentIndices.has(i))
+
+  const ordered = [...unsent, ...sent]
+  const sentCount = sentIndices.size
+  const remaining = institutions.length - sentCount
+
   return (
     <div className="w-full max-w-3xl mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
@@ -196,7 +234,7 @@ export function InstitutionCards({ institutions, onVerify, onStartOver }: Instit
             Your Action Items
           </h2>
           <p className="text-muted-foreground">
-            {institutions.length} institutions to contact, sorted by deadline
+            {remaining} remaining &mdash; {sentCount} sent
           </p>
         </div>
         <Button variant="outline" onClick={onStartOver}>
@@ -205,12 +243,14 @@ export function InstitutionCards({ institutions, onVerify, onStartOver }: Instit
       </div>
       
       <div className="flex flex-col gap-4">
-        {institutions.map((institution, index) => (
+        {ordered.map(({ inst, i }) => (
           <InstitutionCard
-            key={`${institution.name}-${index}`}
-            institution={institution}
-            index={index}
+            key={`${inst.name}-${i}`}
+            institution={inst}
+            index={i}
+            sent={sentIndices.has(i)}
             onVerify={onVerify}
+            onMarkSent={handleMarkSent}
           />
         ))}
       </div>
