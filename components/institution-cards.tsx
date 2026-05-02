@@ -524,9 +524,17 @@ export function InstitutionCards({ institutions, memorialItems, onVerify, onStar
   return (
     <div className="w-full max-w-3xl mx-auto">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <h2 className="font-serif text-2xl sm:text-3xl text-foreground">Your Action Items</h2>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+        <div>
+          <h2 className="font-serif text-2xl sm:text-3xl text-foreground mb-1">Your Action Items</h2>
+        </div>
         <Button variant="outline" onClick={onStartOver}>Start Over</Button>
+      </div>
+
+      <div className="mb-6 p-3 bg-muted/40 border border-border rounded-lg">
+        <p className="text-sm text-muted-foreground">
+          <span className="font-medium text-foreground">Tip:</span> Assign family members to each task using the "+ Assign" button on any card. Add their phone number to send them an SMS reminder with the deadline.
+        </p>
       </div>
 
       {/* Progress bar */}
