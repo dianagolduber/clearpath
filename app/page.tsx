@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { InputForm } from '@/components/input-form'
+import { InputForm, type FormData } from '@/components/input-form'
 import { InstitutionCards } from '@/components/institution-cards'
 import type { Institution } from '@/lib/types'
 
@@ -11,7 +11,17 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null)
   const [userDescription, setUserDescription] = useState('')
 
-  const handleSubmit = async (description: string) => {
+  const handleSubmit = async (data: FormData) => {
+    // Build a natural-language description from structured fields
+    const fullName = [data.firstName, data.lastName].filter(Boolean).join(' ')
+    const datePart = data.dateOfPassing
+      ? ` on ${new Date(data.dateOfPassing + 'T00:00:00').toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}`
+      : ''
+    const accountsPart = data.knownAccounts.trim()
+      ? ` They had accounts with: ${data.knownAccounts.trim()}.`
+      : ''
+    const description = `${fullName} passed away${datePart}. They lived in ${data.state}.${accountsPart}`
+
     setIsLoading(true)
     setError(null)
     setUserDescription(description)

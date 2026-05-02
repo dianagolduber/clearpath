@@ -2,53 +2,169 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Textarea } from '@/components/ui/textarea'
+import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
+import { Field, FieldGroup, FieldLabel } from '@/components/ui/field'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Textarea } from '@/components/ui/textarea'
+
+const US_STATES = [
+  'Alabama','Alaska','Arizona','Arkansas','California','Colorado','Connecticut',
+  'Delaware','Florida','Georgia','Hawaii','Idaho','Illinois','Indiana','Iowa',
+  'Kansas','Kentucky','Louisiana','Maine','Maryland','Massachusetts','Michigan',
+  'Minnesota','Mississippi','Missouri','Montana','Nebraska','Nevada',
+  'New Hampshire','New Jersey','New Mexico','New York','North Carolina',
+  'North Dakota','Ohio','Oklahoma','Oregon','Pennsylvania','Rhode Island',
+  'South Carolina','South Dakota','Tennessee','Texas','Utah','Vermont',
+  'Virginia','Washington','West Virginia','Wisconsin','Wyoming',
+]
+
+export interface FormData {
+  firstName: string
+  lastName: string
+  state: string
+  dateOfPassing: string
+  knownAccounts: string
+}
 
 interface InputFormProps {
-  onSubmit: (description: string) => void
+  onSubmit: (data: FormData) => void
   isLoading: boolean
 }
 
 export function InputForm({ onSubmit, isLoading }: InputFormProps) {
-  const [description, setDescription] = useState('')
+  const [form, setForm] = useState<FormData>({
+    firstName: '',
+    lastName: '',
+    state: '',
+    dateOfPassing: '',
+    knownAccounts: '',
+  })
+
+  const set = (key: keyof FormData) => (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => setForm(prev => ({ ...prev, [key]: e.target.value }))
+
+  const canSubmit = form.firstName.trim() && form.state && !isLoading
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (description.trim() && !isLoading) {
-      onSubmit(description.trim())
-    }
+    if (!canSubmit) return
+    onSubmit(form)
   }
 
   return (
     <form onSubmit={handleSubmit} className="w-full max-w-2xl mx-auto">
-      <div className="flex flex-col gap-4">
-        <label htmlFor="description" className="sr-only">
-          Describe your loved one and their accounts
-        </label>
-        <Textarea
-          id="description"
-          placeholder="Tell us about your loved one. Include their name, state of residence, and any accounts or institutions you know about (banks, insurance, utilities, subscriptions, etc.)
+      <div className="bg-card border border-border rounded-xl p-6 sm:p-8 flex flex-col gap-6">
 
-Example: My mother, Margaret Chen, passed away on March 15th. She lived in California. She had accounts with Chase Bank, Blue Cross insurance, PG&E utilities, and Social Security. She also had a 401k through Fidelity from her work at..."
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          disabled={isLoading}
-          className="min-h-[200px] bg-card border-border text-foreground placeholder:text-muted-foreground resize-none text-base leading-relaxed"
-        />
-        <Button 
-          type="submit" 
-          disabled={!description.trim() || isLoading}
+        {/* Name row */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <FieldGroup>
+            <Field>
+              <FieldLabel htmlFor="firstName">
+                First name <span className="text-destructive">*</span>
+              </FieldLabel>
+              <Input
+                id="firstName"
+                placeholder="Margaret"
+                value={form.firstName}
+                onChange={set('firstName')}
+                disabled={isLoading}
+                required
+              />
+            </Field>
+          </FieldGroup>
+          <FieldGroup>
+            <Field>
+              <FieldLabel htmlFor="lastName">Last name</FieldLabel>
+              <Input
+                id="lastName"
+                placeholder="Chen"
+                value={form.lastName}
+                onChange={set('lastName')}
+                disabled={isLoading}
+              />
+            </Field>
+          </FieldGroup>
+        </div>
+
+        {/* State + Date row */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <FieldGroup>
+            <Field>
+              <FieldLabel htmlFor="state">
+                State of residence <span className="text-destructive">*</span>
+              </FieldLabel>
+              <Select
+                value={form.state}
+                onValueChange={val => setForm(prev => ({ ...prev, state: val }))}
+                disabled={isLoading}
+              >
+                <SelectTrigger id="state">
+                  <SelectValue placeholder="Select a state" />
+                </SelectTrigger>
+                <SelectContent>
+                  {US_STATES.map(s => (
+                    <SelectItem key={s} value={s}>{s}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
+          </FieldGroup>
+          <FieldGroup>
+            <Field>
+              <FieldLabel htmlFor="dateOfPassing">Date of passing</FieldLabel>
+              <Input
+                id="dateOfPassing"
+                type="date"
+                value={form.dateOfPassing}
+                onChange={set('dateOfPassing')}
+                disabled={isLoading}
+              />
+            </Field>
+          </FieldGroup>
+        </div>
+
+        {/* Known accounts */}
+        <FieldGroup>
+          <Field>
+            <FieldLabel htmlFor="knownAccounts">
+              Known accounts or institutions{' '}
+              <span className="text-muted-foreground font-normal">(optional)</span>
+            </FieldLabel>
+            <Textarea
+              id="knownAccounts"
+              placeholder="e.g. Chase Bank, Blue Cross insurance, PG&E utilities, Social Security, Fidelity 401k..."
+              value={form.knownAccounts}
+              onChange={set('knownAccounts')}
+              disabled={isLoading}
+              className="min-h-[96px] resize-none"
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Leave blank if you&apos;re not sure — we&apos;ll suggest the most common ones.
+            </p>
+          </Field>
+        </FieldGroup>
+
+        <Button
+          type="submit"
+          disabled={!canSubmit}
           className="w-full sm:w-auto sm:self-end"
           size="lg"
         >
           {isLoading ? (
             <>
               <Spinner className="mr-2" />
-              Analyzing...
+              Generating letters...
             </>
           ) : (
-            'Generate Letters'
+            'Generate letters'
           )}
         </Button>
       </div>
