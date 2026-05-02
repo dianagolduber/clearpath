@@ -1,7 +1,7 @@
 export async function POST(req: Request) {
   try {
     const body = await req.json()
-    const { emails } = body
+    const { emails, baseUrl } = body
 
     if (!emails || !Array.isArray(emails) || emails.length === 0) {
       return Response.json({ error: 'No emails to send' }, { status: 400 })
@@ -11,6 +11,9 @@ export async function POST(req: Request) {
     if (!apiKey) {
       return Response.json({ error: 'Email service not configured. Missing RESEND_API_KEY' }, { status: 500 })
     }
+
+    // Use provided baseUrl or default to production
+    const siteUrl = baseUrl || 'https://aftermath.vercel.app'
 
     const results = []
 
@@ -48,6 +51,16 @@ export async function POST(req: Request) {
         const calendarDetails = encodeURIComponent(`Letter for ${deceasedName}`)
         const calendarLink = `https://www.google.com/calendar/render?action=TEMPLATE&text=${calendarTitle}&dates=${calendarDate}/${calendarDate}&details=${calendarDetails}`
 
+        // Generate letter URL with encoded data
+        const letterData = {
+          institutionName: a.institutionName,
+          deadlineDays: a.deadlineDays,
+          letter: a.letter,
+          deceasedName,
+        }
+        const encodedData = encodeURIComponent(btoa(JSON.stringify(letterData)))
+        const letterUrl = `${siteUrl}/letter/${encodedData}`
+
         const deadlineText = a.deadlineDays === 0 
           ? 'When ready' 
           : a.deadlineDays === 1 
@@ -55,8 +68,8 @@ export async function POST(req: Request) {
             : `${a.deadlineDays} days`
 
         return `
-          <div style="margin-bottom: 32px; border: 1px solid #e5e5e5; border-radius: 12px; overflow: hidden;">
-            <div style="padding: 16px 20px; background: #fafafa; border-bottom: 1px solid #e5e5e5;">
+          <div style="margin-bottom: 24px; border: 1px solid #e5e5e5; border-radius: 12px; overflow: hidden;">
+            <div style="padding: 20px; background: #fafafa;">
               <table cellpadding="0" cellspacing="0" border="0" width="100%">
                 <tr>
                   <td>
@@ -75,16 +88,27 @@ export async function POST(req: Request) {
                   </td>
                 </tr>
               </table>
-            </div>
-            <div style="padding: 20px;">
-              <pre style="background: #f9fafb; padding: 16px; border-radius: 8px; white-space: pre-wrap; font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.6; color: #374151; margin: 0; overflow-x: auto;">${a.letter}</pre>
-              ${a.deadlineDays > 0 ? `
-                <div style="margin-top: 16px;">
-                  <a href="${calendarLink}" target="_blank" style="display: inline-block; padding: 10px 16px; background: #171717; color: #ffffff; text-decoration: none; font-size: 13px; font-weight: 500; border-radius: 6px;">
-                    Add to Calendar
-                  </a>
-                </div>
-              ` : ''}
+              
+              <p style="margin: 16px 0 20px; font-size: 14px; color: #6b7280; line-height: 1.5;">
+                Your letter is ready. Click below to view, edit, and copy it.
+              </p>
+              
+              <table cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td style="padding-right: 12px;">
+                    <a href="${letterUrl}" target="_blank" style="display: inline-block; padding: 12px 24px; background: #171717; color: #ffffff; text-decoration: none; font-size: 14px; font-weight: 500; border-radius: 8px;">
+                      View &amp; Edit Your Letter &rarr;
+                    </a>
+                  </td>
+                  ${a.deadlineDays > 0 ? `
+                    <td>
+                      <a href="${calendarLink}" target="_blank" style="display: inline-block; padding: 12px 20px; background: #ffffff; color: #171717; text-decoration: none; font-size: 14px; font-weight: 500; border-radius: 8px; border: 1px solid #e5e5e5;">
+                        Add to Calendar
+                      </a>
+                    </td>
+                  ` : ''}
+                </tr>
+              </table>
             </div>
           </div>
         `
@@ -124,7 +148,7 @@ export async function POST(req: Request) {
                         Hi ${name},
                       </p>
                       <p style="margin: 0 0 32px; font-size: 16px; line-height: 1.6; color: #374151;">
-                        You've been assigned ${taskCount === 1 ? 'a task' : `${taskCount} tasks`} to help with ${deceasedName}'s estate. Each letter below is ready to send — just copy, print, and mail.
+                        You've been assigned ${taskCount === 1 ? 'a task' : `${taskCount} tasks`} to help with ${deceasedName}'s estate. Each letter below is ready — click to view, edit, and copy.
                       </p>
                       
                       ${assignmentSections}
