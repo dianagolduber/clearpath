@@ -12,33 +12,23 @@ export async function POST(req: Request) {
       return Response.json({ error: 'Email service not configured. Missing RESEND_API_KEY' }, { status: 500 })
     }
 
-    // Group emails by recipient to consolidate multiple assignments
-    const emailsByRecipient = new Map<string, { 
-      name: string
-      deceasedName: string
-      assignments: { institutionName: string; deadlineDays: number; letter: string }[]
-    }>()
+    const results = []
 
     for (const email of emails) {
-      const { to, name, institutionName, deadlineDays, deceasedName, letter } = email
+      // Support both old format (single assignment) and new format (tasks array)
+      const { to, name, deceasedName, tasks, institutionName, deadlineDays, letter } = email
       
       if (!to || !to.includes('@')) continue
 
-      if (emailsByRecipient.has(to)) {
-        emailsByRecipient.get(to)!.assignments.push({ institutionName, deadlineDays, letter })
-      } else {
-        emailsByRecipient.set(to, {
-          name,
-          deceasedName,
-          assignments: [{ institutionName, deadlineDays, letter }]
-        })
-      }
-    }
+      // Build assignments array from either format
+      const assignments: { institutionName: string; deadlineDays: number; letter: string }[] = 
+        tasks && Array.isArray(tasks) 
+          ? tasks 
+          : institutionName 
+            ? [{ institutionName, deadlineDays: deadlineDays || 0, letter: letter || '' }]
+            : []
 
-    const results = []
-
-    for (const [to, data] of emailsByRecipient) {
-      const { name, deceasedName, assignments } = data
+      if (assignments.length === 0) continue
 
       // Sort assignments by deadline (most urgent first)
       assignments.sort((a, b) => a.deadlineDays - b.deadlineDays)
@@ -101,9 +91,7 @@ export async function POST(req: Request) {
       }).join('')
 
       const taskCount = assignments.length
-      const subject = taskCount === 1 
-        ? `You're handling ${assignments[0].institutionName} for ${deceasedName}`
-        : `You're handling ${taskCount} tasks for ${deceasedName}`
+      const subject = `Your tasks for ${deceasedName}'s estate`
 
       const htmlBody = `
         <!DOCTYPE html>

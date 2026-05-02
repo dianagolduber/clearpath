@@ -12,7 +12,14 @@ import {
   CollapsibleContent, 
   CollapsibleTrigger 
 } from '@/components/ui/collapsible'
-import { ChevronDown, ChevronUp, CheckCircle2, AlertCircle, User, X, Send, Plus } from 'lucide-react'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { ChevronDown, ChevronUp, CheckCircle2, AlertCircle, User, X, Send, Plus, Mail } from 'lucide-react'
 import { toast } from 'sonner'
 import { Checkbox } from '@/components/ui/checkbox'
 import type { Institution, MemorialItem } from '@/lib/types'
@@ -24,6 +31,12 @@ interface InstitutionCardsProps {
   onVerify: (institutionName: string, index: number) => Promise<{ refinedLetter: string; sources: string[] }>
   onStartOver: () => void
   deceasedName: string
+}
+
+interface FamilyMember {
+  id: string
+  name: string
+  email: string
 }
 
 const MEMORIAL_LABELS: Record<MemorialItem['type'], string> = {
@@ -78,145 +91,54 @@ const FUNERAL_CHECKLIST_ITEMS = [
   'Order death certificates (get 10+ copies)',
 ]
 
-// ── Per-card assignee section ──────────────────────────────────────────────
-// Each card manages its own list of assignees inline — no global panel needed.
-function AssignSection({
-  assignees,
-  onAdd,
-  onRemove,
-  onSend,
+// ── Family Member Selector (per card) ──────────────────────────────────────
+function FamilySelector({
+  familyMembers,
+  selectedId,
+  onSelect,
 }: {
-  assignees: { name: string; email: string }[]
-  onAdd: (name: string, email: string) => void
-  onRemove: (name: string) => void
-  onSend: (assignees: { name: string; email: string }[]) => void
+  familyMembers: FamilyMember[]
+  selectedId: string | null
+  onSelect: (id: string | null) => void
 }) {
-  const [isAdding, setIsAdding] = useState(false)
-  const [nameInput, setNameInput] = useState('')
-  const [emailInput, setEmailInput] = useState('')
-  const [isSending, setIsSending] = useState(false)
-
-  const handleAdd = () => {
-    const name = nameInput.trim()
-    if (!name) return
-    onAdd(name, emailInput.trim())
-    setNameInput('')
-    setEmailInput('')
-    setIsAdding(false)
-  }
-
-  const handleSendClick = async () => {
-    setIsSending(true)
-    try {
-      await onSend(assigneesWithEmail)
-    } finally {
-      setIsSending(false)
-    }
-  }
-
-  const assigneesWithEmail = assignees.filter(a => a.email && a.email.includes('@'))
+  if (familyMembers.length === 0) return null
 
   return (
     <div className="pt-3 border-t border-border/50">
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="text-xs text-muted-foreground font-medium shrink-0">Assigned to:</span>
-
-        {assignees.length === 0 && !isAdding && (
-          <span className="text-xs text-muted-foreground italic">No one yet</span>
-        )}
-
-        {assignees.map(a => (
-          <span
-            key={a.name}
-            className="inline-flex items-center gap-1 bg-muted text-muted-foreground text-xs px-2 py-1 rounded-full"
-          >
-            <User className="h-3 w-3" />
-            {a.name}
-            {a.email && <span className="opacity-60 truncate max-w-24">{a.email}</span>}
-            <button
-              onClick={() => onRemove(a.name)}
-              aria-label={`Remove ${a.name}`}
-              className="hover:text-foreground ml-0.5"
-            >
-              <X className="h-3 w-3" />
-            </button>
+      <div className="flex items-center gap-2">
+        <span className="text-xs text-muted-foreground font-medium shrink-0">Assign to:</span>
+        <Select value={selectedId || 'none'} onValueChange={(v) => onSelect(v === 'none' ? null : v)}>
+          <SelectTrigger className="h-8 text-xs w-40">
+            <SelectValue placeholder="Select person" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="none">No one</SelectItem>
+            {familyMembers.map(m => (
+              <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {selectedId && (
+          <span className="text-xs text-green-600 flex items-center gap-1">
+            <CheckCircle2 className="h-3 w-3" /> Assigned
           </span>
-        ))}
-
-        {!isAdding && (
-          <button
-            onClick={() => setIsAdding(true)}
-            className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground border border-dashed border-border rounded-full px-2 py-1 transition-colors"
-          >
-            <Plus className="h-3 w-3" />
-            Assign
-          </button>
-        )}
-
-        {assigneesWithEmail.length > 0 && (
-          <button
-            onClick={handleSendClick}
-            disabled={isSending}
-            className="inline-flex items-center gap-1 text-xs text-primary hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isSending ? (
-              <>
-                <Spinner className="h-3 w-3" />
-                Sending...
-              </>
-            ) : (
-              <>
-                <Send className="h-3 w-3" />
-                Email
-              </>
-            )}
-          </button>
         )}
       </div>
-
-      {isAdding && (
-        <div className="mt-2 flex gap-2 flex-wrap">
-          <Input
-            autoFocus
-            value={nameInput}
-            onChange={e => setNameInput(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && handleAdd()}
-            placeholder="Name"
-            className="flex-1 min-w-28 h-8 text-xs"
-          />
-          <Input
-            type="email"
-            value={emailInput}
-            onChange={e => setEmailInput(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && handleAdd()}
-            placeholder="Email (optional)"
-            className="w-44 h-8 text-xs"
-          />
-          <Button variant="default" size="sm" onClick={handleAdd} className="h-8 text-xs">Add</Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => { setIsAdding(false); setNameInput(''); setEmailInput('') }}
-            className="h-8 text-xs"
-          >
-            Cancel
-          </Button>
-        </div>
-      )}
     </div>
   )
 }
 
 // ── Funeral Checklist ──────────────────────────────────────────────────────
 function FuneralChecklist({
-  deceasedName,
-  onSendEmail,
+  familyMembers,
+  selectedAssignee,
+  onAssign,
 }: {
-  deceasedName: string
-  onSendEmail: (emails: { to: string; name: string; institutionName: string; deadlineDays: number; deceasedName: string; letter: string }[]) => Promise<void>
+  familyMembers: FamilyMember[]
+  selectedAssignee: string | null
+  onAssign: (id: string | null) => void
 }) {
   const [checkedItems, setCheckedItems] = useState<Set<number>>(new Set())
-  const [assignees, setAssignees] = useState<{ name: string; email: string }[]>([])
 
   const toggleItem = (index: number) => {
     setCheckedItems(prev => {
@@ -255,19 +177,7 @@ function FuneralChecklist({
             </label>
           ))}
         </div>
-        <AssignSection
-          assignees={assignees}
-          onAdd={(name, email) => setAssignees(prev => [...prev.filter(a => a.name !== name), { name, email }])}
-          onRemove={(name) => setAssignees(prev => prev.filter(a => a.name !== name))}
-          onSend={(withEmail) => onSendEmail(withEmail.map(a => ({
-            to: a.email,
-            name: a.name,
-            institutionName: 'Funeral Checklist',
-            deadlineDays: 0,
-            deceasedName,
-            letter: FUNERAL_CHECKLIST_ITEMS.map((item, i) => `${checkedItems.has(i) ? '✓' : '○'} ${item}`).join('\n'),
-          })))}
-        />
+        <FamilySelector familyMembers={familyMembers} selectedId={selectedAssignee} onSelect={onAssign} />
       </CardContent>
     </Card>
   )
@@ -276,20 +186,23 @@ function FuneralChecklist({
 // ── Memorial Card ──────────────────────────────────────────────────────────
 function MemorialCard({
   item,
-  deceasedName,
-  onSendEmail,
+  familyMembers,
+  selectedAssignee,
+  onAssign,
+  getEditedContent,
+  setEditedContent,
 }: {
   item: MemorialItem
-  deceasedName: string
-  onSendEmail: (emails: { to: string; name: string; institutionName: string; deadlineDays: number; deceasedName: string; letter: string }[]) => Promise<void>
+  familyMembers: FamilyMember[]
+  selectedAssignee: string | null
+  onAssign: (id: string | null) => void
+  getEditedContent: () => string
+  setEditedContent: (content: string) => void
 }) {
   const [isOpen, setIsOpen] = useState(false)
   const [copyText, setCopyText] = useState('Copy')
   const [isEditing, setIsEditing] = useState(false)
-  const [editedContent, setEditedContent] = useState(item.content)
-  const [assignees, setAssignees] = useState<{ name: string; email: string }[]>([])
-
-  const label = MEMORIAL_LABELS[item.type] || item.title
+  const editedContent = getEditedContent()
 
   const handleCopy = async () => {
     try {
@@ -343,20 +256,7 @@ function MemorialCard({
             )}
           </CollapsibleContent>
         </Collapsible>
-
-        <AssignSection
-          assignees={assignees}
-          onAdd={(name, email) => setAssignees(prev => [...prev.filter(a => a.name !== name), { name, email }])}
-          onRemove={(name) => setAssignees(prev => prev.filter(a => a.name !== name))}
-          onSend={(withEmail) => onSendEmail(withEmail.map(a => ({
-            to: a.email,
-            name: a.name,
-            institutionName: label,
-            deadlineDays: 0,
-            deceasedName,
-            letter: editedContent,
-          })))}
-        />
+        <FamilySelector familyMembers={familyMembers} selectedId={selectedAssignee} onSelect={onAssign} />
       </CardContent>
     </Card>
   )
@@ -375,15 +275,18 @@ function UrgencyBadge({ urgency }: { urgency: Institution['urgency'] }) {
 
 // ── Institution Card ───────────────────────────────────────────────────────
 function InstitutionCard({ 
-  institution, index, sent, onVerify, onMarkSent, deceasedName, onSendEmail,
+  institution, index, sent, onVerify, onMarkSent, familyMembers, selectedAssignee, onAssign, getEditedLetter, setEditedLetter,
 }: { 
   institution: Institution & { verified?: boolean }
   index: number
   sent: boolean
   onVerify: (institutionName: string, index: number) => Promise<{ refinedLetter: string; sources: string[] }>
   onMarkSent: (index: number) => void
-  deceasedName: string
-  onSendEmail: (emails: { to: string; name: string; institutionName: string; deadlineDays: number; deceasedName: string; letter: string }[]) => Promise<void>
+  familyMembers: FamilyMember[]
+  selectedAssignee: string | null
+  onAssign: (id: string | null) => void
+  getEditedLetter: () => string
+  setEditedLetter: (letter: string) => void
 }) {
   const [isLetterOpen, setIsLetterOpen] = useState(false)
   const [isVerifying, setIsVerifying] = useState(false)
@@ -391,8 +294,7 @@ function InstitutionCard({
   const [sources, setSources] = useState<string[]>([])
   const [copyText, setCopyText] = useState('Copy Letter')
   const [isEditing, setIsEditing] = useState(false)
-  const [editedLetter, setEditedLetter] = useState(institution.letter)
-  const [assignees, setAssignees] = useState<{ name: string; email: string }[]>([])
+  const editedLetter = getEditedLetter()
 
   const handleVerify = async () => {
     setIsVerifying(true)
@@ -513,19 +415,7 @@ function InstitutionCard({
           </CollapsibleContent>
         </Collapsible>
 
-        <AssignSection
-          assignees={assignees}
-          onAdd={(name, email) => setAssignees(prev => [...prev.filter(a => a.name !== name), { name, email }])}
-          onRemove={(name) => setAssignees(prev => prev.filter(a => a.name !== name))}
-          onSend={(withEmail) => onSendEmail(withEmail.map(a => ({
-            to: a.email,
-            name: a.name,
-            institutionName: institution.name,
-            deadlineDays: institution.deadlineDays,
-            deceasedName,
-            letter: editedLetter,
-          })))}
-        />
+        <FamilySelector familyMembers={familyMembers} selectedId={selectedAssignee} onSelect={onAssign} />
       </CardContent>
     </Card>
   )
@@ -534,10 +424,142 @@ function InstitutionCard({
 // ── Root export ────────────────────────────────────────────────────────────
 export function InstitutionCards({ institutions, memorialItems, onVerify, onStartOver, deceasedName }: InstitutionCardsProps) {
   const [sentIndices, setSentIndices] = useState<Set<number>>(new Set())
+  
+  // Family members (up to 5)
+  const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([])
+  const [nameInput, setNameInput] = useState('')
+  const [emailInput, setEmailInput] = useState('')
+  
+  // Assignments: taskKey -> memberId
+  const [assignments, setAssignments] = useState<Record<string, string>>({})
+  
+  // Edited letters/content
+  const [editedLetters, setEditedLetters] = useState<Record<string, string>>({})
+  const [editedMemorials, setEditedMemorials] = useState<Record<string, string>>({})
+  
+  const [isSending, setIsSending] = useState(false)
 
   const handleMarkSent = (index: number) => setSentIndices(prev => new Set(prev).add(index))
 
-  const handleSendEmail = async (emails: { to: string; name: string; institutionName: string; deadlineDays: number; deceasedName: string; letter: string }[]) => {
+  const handleAddMember = () => {
+    const name = nameInput.trim()
+    const email = emailInput.trim()
+    if (!name || !email || !email.includes('@')) {
+      toast.error('Please enter a name and valid email')
+      return
+    }
+    if (familyMembers.length >= 5) {
+      toast.error('Maximum 5 family members')
+      return
+    }
+    if (familyMembers.some(m => m.email === email)) {
+      toast.error('This email is already added')
+      return
+    }
+    setFamilyMembers(prev => [...prev, { id: crypto.randomUUID(), name, email }])
+    setNameInput('')
+    setEmailInput('')
+  }
+
+  const handleRemoveMember = (id: string) => {
+    setFamilyMembers(prev => prev.filter(m => m.id !== id))
+    // Remove their assignments
+    setAssignments(prev => {
+      const next = { ...prev }
+      for (const key of Object.keys(next)) {
+        if (next[key] === id) delete next[key]
+      }
+      return next
+    })
+  }
+
+  const handleAssign = (taskKey: string, memberId: string | null) => {
+    setAssignments(prev => {
+      const next = { ...prev }
+      if (memberId) next[taskKey] = memberId
+      else delete next[taskKey]
+      return next
+    })
+  }
+
+  // Count tasks per member
+  const getTaskCount = (memberId: string) => {
+    return Object.values(assignments).filter(id => id === memberId).length
+  }
+
+  // Get edited letter for institution
+  const getEditedLetter = (index: number) => {
+    return editedLetters[`inst-${index}`] ?? institutions[index]?.letter ?? ''
+  }
+  const setEditedLetter = (index: number, letter: string) => {
+    setEditedLetters(prev => ({ ...prev, [`inst-${index}`]: letter }))
+  }
+
+  // Get edited content for memorial
+  const getEditedMemorial = (type: string, original: string) => {
+    return editedMemorials[type] ?? original
+  }
+  const setEditedMemorial = (type: string, content: string) => {
+    setEditedMemorials(prev => ({ ...prev, [type]: content }))
+  }
+
+  // Send all assignments
+  const handleSendAssignments = async () => {
+    // Group assignments by member
+    const memberAssignments: Record<string, { institutionName: string; deadlineDays: number; letter: string }[]> = {}
+    
+    for (const [taskKey, memberId] of Object.entries(assignments)) {
+      if (!memberAssignments[memberId]) memberAssignments[memberId] = []
+      
+      if (taskKey.startsWith('inst-')) {
+        const idx = parseInt(taskKey.replace('inst-', ''))
+        const inst = institutions[idx]
+        if (inst) {
+          memberAssignments[memberId].push({
+            institutionName: inst.name,
+            deadlineDays: inst.deadlineDays,
+            letter: getEditedLetter(idx),
+          })
+        }
+      } else if (taskKey === 'checklist') {
+        memberAssignments[memberId].push({
+          institutionName: 'Funeral Checklist',
+          deadlineDays: 0,
+          letter: FUNERAL_CHECKLIST_ITEMS.map(item => `○ ${item}`).join('\n'),
+        })
+      } else if (taskKey.startsWith('memorial-')) {
+        const type = taskKey.replace('memorial-', '')
+        const item = memorialItems.find(m => m.type === type)
+        if (item) {
+          memberAssignments[memberId].push({
+            institutionName: MEMORIAL_LABELS[item.type] || item.title,
+            deadlineDays: 0,
+            letter: getEditedMemorial(type, item.content),
+          })
+        }
+      }
+    }
+
+    // Build emails - one per member with all their tasks
+    const emails = Object.entries(memberAssignments)
+      .map(([memberId, tasks]) => {
+        const member = familyMembers.find(m => m.id === memberId)
+        if (!member || tasks.length === 0) return null
+        return {
+          to: member.email,
+          name: member.name,
+          deceasedName,
+          tasks,
+        }
+      })
+      .filter(Boolean)
+
+    if (emails.length === 0) {
+      toast.error('No assignments to send')
+      return
+    }
+
+    setIsSending(true)
     try {
       const response = await fetch('/api/send-email', {
         method: 'POST',
@@ -546,9 +568,11 @@ export function InstitutionCards({ institutions, memorialItems, onVerify, onStar
       })
       const data = await response.json()
       if (!response.ok) throw new Error(data.error || 'Failed to send')
-      toast.success(`Email sent to ${emails.map(e => e.name).join(', ')}!`)
+      toast.success(`Emails sent to ${emails.length} family member${emails.length > 1 ? 's' : ''}!`)
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to send email')
+      toast.error(err instanceof Error ? err.message : 'Failed to send emails')
+    } finally {
+      setIsSending(false)
     }
   }
 
@@ -559,6 +583,8 @@ export function InstitutionCards({ institutions, memorialItems, onVerify, onStar
   const remaining = institutions.length - sentCount
   const total = institutions.length
   const progressPct = total > 0 ? (sentCount / total) * 100 : 0
+  const totalAssignments = Object.keys(assignments).length
+  const membersWithTasks = familyMembers.filter(m => getTaskCount(m.id) > 0)
 
   return (
     <div className="w-full max-w-3xl mx-auto">
@@ -570,10 +596,95 @@ export function InstitutionCards({ institutions, memorialItems, onVerify, onStar
         <Button variant="outline" onClick={onStartOver}>Start Over</Button>
       </div>
 
-      <div className="mb-6 p-3 bg-muted/40 border border-border rounded-lg">
-        <p className="text-sm text-muted-foreground">
-          <span className="font-medium text-foreground">Tip:</span> Assign family members to each task using the "+ Assign" button on any card. Add their email to send them the letter and deadline.
+      {/* Family Members Panel */}
+      <div className="mb-6 p-4 bg-muted/30 border border-border rounded-lg">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm font-medium text-foreground flex items-center gap-2">
+            <User className="h-4 w-4" />
+            Assign to Family
+          </h3>
+          <span className="text-xs text-muted-foreground">{familyMembers.length}/5 members</span>
+        </div>
+        
+        <p className="text-xs text-muted-foreground mb-3">
+          Add family members, then assign tasks to them using the dropdown on each card. Send one email per person with all their assignments.
         </p>
+
+        {/* Add member form */}
+        {familyMembers.length < 5 && (
+          <div className="flex gap-2 mb-4 flex-wrap">
+            <Input
+              value={nameInput}
+              onChange={e => setNameInput(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleAddMember()}
+              placeholder="Name"
+              className="flex-1 min-w-28 h-9 text-sm"
+            />
+            <Input
+              type="email"
+              value={emailInput}
+              onChange={e => setEmailInput(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleAddMember()}
+              placeholder="Email"
+              className="flex-1 min-w-40 h-9 text-sm"
+            />
+            <Button variant="outline" onClick={handleAddMember} className="h-9 text-sm shrink-0">
+              <Plus className="h-4 w-4 mr-1" /> Add
+            </Button>
+          </div>
+        )}
+
+        {/* Family member list with task counts */}
+        {familyMembers.length > 0 && (
+          <div className="space-y-2">
+            {familyMembers.map(member => {
+              const taskCount = getTaskCount(member.id)
+              return (
+                <div
+                  key={member.id}
+                  className="flex items-center justify-between p-2 bg-background border border-border rounded-lg"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-2 h-2 rounded-full ${taskCount > 0 ? 'bg-green-500' : 'bg-gray-300'}`} />
+                    <div>
+                      <span className="text-sm font-medium text-foreground">{member.name}</span>
+                      <span className="text-xs text-muted-foreground ml-2">{member.email}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs text-muted-foreground">
+                      {taskCount} task{taskCount !== 1 ? 's' : ''}
+                    </span>
+                    <button
+                      onClick={() => handleRemoveMember(member.id)}
+                      className="text-muted-foreground hover:text-foreground"
+                      aria-label={`Remove ${member.name}`}
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
+
+        {/* Send button */}
+        {membersWithTasks.length > 0 && (
+          <div className="mt-4 pt-4 border-t border-border">
+            <Button
+              onClick={handleSendAssignments}
+              disabled={isSending}
+              className="w-full"
+            >
+              {isSending ? (
+                <><Spinner className="mr-2 h-4 w-4" /> Sending...</>
+              ) : (
+                <><Mail className="mr-2 h-4 w-4" /> Send Assignments ({totalAssignments} task{totalAssignments !== 1 ? 's' : ''} to {membersWithTasks.length} person{membersWithTasks.length !== 1 ? 's' : ''})</>
+              )}
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Progress bar */}
@@ -607,8 +718,11 @@ export function InstitutionCards({ institutions, memorialItems, onVerify, onStar
             sent={sentIndices.has(i)}
             onVerify={onVerify}
             onMarkSent={handleMarkSent}
-            deceasedName={deceasedName}
-            onSendEmail={handleSendEmail}
+            familyMembers={familyMembers}
+            selectedAssignee={assignments[`inst-${i}`] || null}
+            onAssign={(memberId) => handleAssign(`inst-${i}`, memberId)}
+            getEditedLetter={() => getEditedLetter(i)}
+            setEditedLetter={(letter) => setEditedLetter(i, letter)}
           />
         ))}
       </div>
@@ -622,15 +736,19 @@ export function InstitutionCards({ institutions, memorialItems, onVerify, onStar
           </div>
           <div className="flex flex-col gap-4">
             <FuneralChecklist
-              deceasedName={deceasedName}
-              onSendEmail={handleSendEmail}
+              familyMembers={familyMembers}
+              selectedAssignee={assignments['checklist'] || null}
+              onAssign={(memberId) => handleAssign('checklist', memberId)}
             />
             {memorialItems.map((item) => (
               <MemorialCard
                 key={item.type}
                 item={item}
-                deceasedName={deceasedName}
-                onSendEmail={handleSendEmail}
+                familyMembers={familyMembers}
+                selectedAssignee={assignments[`memorial-${item.type}`] || null}
+                onAssign={(memberId) => handleAssign(`memorial-${item.type}`, memberId)}
+                getEditedContent={() => getEditedMemorial(item.type, item.content)}
+                setEditedContent={(content) => setEditedMemorial(item.type, content)}
               />
             ))}
           </div>
