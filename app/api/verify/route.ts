@@ -12,6 +12,9 @@ interface TavilyResponse {
 }
 
 async function searchTavily(query: string): Promise<TavilyResponse> {
+  console.log('[v0] Tavily search starting for query:', query)
+  const startTime = Date.now()
+  
   const response = await fetch('https://api.tavily.com/search', {
     method: 'POST',
     headers: {
@@ -20,12 +23,15 @@ async function searchTavily(query: string): Promise<TavilyResponse> {
     body: JSON.stringify({
       api_key: process.env.TAVILY_API_KEY,
       query,
-      search_depth: 'advanced',
+      search_depth: 'basic',
       include_answer: false,
       include_raw_content: false,
-      max_results: 5,
+      max_results: 3,
     }),
   })
+
+  const elapsed = Date.now() - startTime
+  console.log('[v0] Tavily search completed in', elapsed, 'ms')
 
   if (!response.ok) {
     throw new Error(`Tavily search failed: ${response.statusText}`)
@@ -35,6 +41,9 @@ async function searchTavily(query: string): Promise<TavilyResponse> {
 }
 
 export async function POST(req: Request) {
+  const startTime = Date.now()
+  console.log('[v0] Verify request starting')
+  
   const { institutionName, state, currentLetter, userDescription } = await req.json()
 
   if (!institutionName || !currentLetter) {
@@ -42,13 +51,15 @@ export async function POST(req: Request) {
   }
 
   // Search for current procedures using Tavily
-  const searchQuery = `current ${state} ${institutionName} death notification procedure 2026`
+  const searchQuery = `${state} ${institutionName} death notification requirements`
   
   let searchResults: TavilyResponse
   try {
+    console.log('[v0] Starting Tavily search')
     searchResults = await searchTavily(searchQuery)
+    console.log('[v0] Search returned', searchResults.results.length, 'results')
   } catch (error) {
-    console.error('Tavily search error:', error)
+    console.error('[v0] Tavily search error:', error)
     return Response.json({ 
       error: 'Search failed', 
       refinedLetter: currentLetter,
@@ -62,6 +73,9 @@ export async function POST(req: Request) {
     .join('\n\n')
 
   // Use Claude to refine the letter based on search results
+  console.log('[v0] Starting Claude refinement')
+  const refinementStart = Date.now()
+  
   const { text: refinedLetter } = await generateText({
     model: 'anthropic/claude-sonnet-4-5',
     messages: [
@@ -90,12 +104,15 @@ Here are the search results about current procedures:
 
 ${searchContext}
 
-Context about the deceased: ${userDescription}
-
 Please refine this letter with any relevant current information from the search results.`,
       },
     ],
   })
+
+  const refinementElapsed = Date.now() - refinementStart
+  const totalElapsed = Date.now() - startTime
+  console.log('[v0] Claude refinement completed in', refinementElapsed, 'ms')
+  console.log('[v0] Total verify request completed in', totalElapsed, 'ms')
 
   const sources = searchResults.results.map(r => r.url)
 
