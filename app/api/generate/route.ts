@@ -1,10 +1,5 @@
 import { generateText, Output } from 'ai'
-import { createAnthropic } from '@ai-sdk/anthropic'
 import { generationResponseSchema } from '@/lib/types'
-
-const anthropic = createAnthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-})
 
 export async function POST(req: Request) {
   try {
@@ -15,10 +10,9 @@ export async function POST(req: Request) {
     }
 
     console.log('[v0] Starting generation with description:', description.substring(0, 100))
-    console.log('[v0] ANTHROPIC_API_KEY exists:', !!process.env.ANTHROPIC_API_KEY)
 
     const { output } = await generateText({
-      model: anthropic('claude-sonnet-4-5-20250514'),
+      model: 'anthropic/claude-sonnet-4-5-20250514',
       system: `You are a compassionate and knowledgeable estate administration assistant. Your role is to help families navigate the difficult paperwork after a loved one's death.
 
 Based on the information provided about the deceased, generate a list of 5-8 prioritized institutions that need to be contacted. For each institution, provide:
