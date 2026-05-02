@@ -11,7 +11,7 @@ export const institutionSchema = z.object({
 })
 
 export const generationResponseSchema = z.object({
-  institutions: z.array(institutionSchema).describe('Array of 8 prioritized institutions to contact'),
+  institutions: z.array(institutionSchema).min(5).max(8).describe('Array of 5-8 prioritized institutions to contact'),
 })
 
 export type Institution = z.infer<typeof institutionSchema>

@@ -1,24 +1,27 @@
 import { generateText, Output } from 'ai'
+import { createAnthropic } from '@ai-sdk/anthropic'
 import { generationResponseSchema } from '@/lib/types'
 
+const anthropic = createAnthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY,
+})
+
 export async function POST(req: Request) {
-  const { description } = await req.json()
+  try {
+    const { description } = await req.json()
 
-  if (!description || typeof description !== 'string') {
-    return Response.json({ error: 'Description is required' }, { status: 400 })
-  }
+    if (!description || typeof description !== 'string') {
+      return Response.json({ error: 'Description is required' }, { status: 400 })
+    }
 
-  const { output } = await generateText({
-    model: 'anthropic/claude-sonnet-4-5',
-    output: Output.object({
-      schema: generationResponseSchema,
-    }),
-    messages: [
-      {
-        role: 'system',
-        content: `You are a compassionate and knowledgeable estate administration assistant. Your role is to help families navigate the difficult paperwork after a loved one's death.
+    console.log('[v0] Starting generation with description:', description.substring(0, 100))
+    console.log('[v0] ANTHROPIC_API_KEY exists:', !!process.env.ANTHROPIC_API_KEY)
 
-Based on the information provided about the deceased, generate a list of exactly 8 prioritized institutions that need to be contacted. For each institution, provide:
+    const { output } = await generateText({
+      model: anthropic('claude-sonnet-4-5-20250514'),
+      system: `You are a compassionate and knowledgeable estate administration assistant. Your role is to help families navigate the difficult paperwork after a loved one's death.
+
+Based on the information provided about the deceased, generate a list of 5-8 prioritized institutions that need to be contacted. For each institution, provide:
 
 1. A formal, ready-to-mail letter that:
    - Uses proper business letter format
@@ -43,13 +46,23 @@ Prioritize institutions in this order:
 8. Other relevant institutions
 
 Be specific to the state mentioned for any state-specific requirements. Use professional, empathetic language throughout.`,
-      },
-      {
-        role: 'user',
-        content: description,
-      },
-    ],
-  })
+      output: Output.object({
+        schema: generationResponseSchema,
+      }),
+      messages: [
+        {
+          role: 'user',
+          content: description,
+        },
+      ],
+    })
 
-  return Response.json({ institutions: output?.institutions ?? [] })
+    console.log('[v0] Generation successful, institutions count:', output?.institutions?.length ?? 0)
+
+    return Response.json({ institutions: output?.institutions ?? [] })
+  } catch (error) {
+    console.error('[v0] Generation error:', error)
+    const message = error instanceof Error ? error.message : 'Unknown error'
+    return Response.json({ error: `Failed to generate: ${message}` }, { status: 500 })
+  }
 }

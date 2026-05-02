@@ -23,11 +23,11 @@ export default function Home() {
         body: JSON.stringify({ description }),
       })
       
-      if (!response.ok) {
-        throw new Error('Failed to generate letters')
-      }
-      
       const data = await response.json()
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to generate letters')
+      }
       // Sort by deadline days
       const sorted = [...data.institutions].sort((a, b) => a.deadlineDays - b.deadlineDays)
       setInstitutions(sorted)
