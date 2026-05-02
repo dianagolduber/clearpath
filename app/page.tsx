@@ -98,7 +98,15 @@ export default function Home() {
   return (
     <main className="min-h-screen">
       <div className="container mx-auto px-4 py-8 sm:py-12 lg:py-16">
-        {institutions.length === 0 ? (
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center gap-6 min-h-[50vh]">
+            <div className="w-12 h-12 border-4 border-muted border-t-primary rounded-full animate-spin" />
+            <div className="text-center max-w-md">
+              <h2 className="font-serif text-2xl text-foreground mb-2">Generating your letters...</h2>
+              <p className="text-muted-foreground">This may take a minute as we personalize each letter for Arizona law and your situation. Thank you for your patience.</p>
+            </div>
+          </div>
+        ) : institutions.length === 0 ? (
           <div className="flex flex-col items-center gap-8 sm:gap-12">
             <header className="text-center max-w-2xl">
               <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl text-foreground leading-tight text-balance mb-4">
