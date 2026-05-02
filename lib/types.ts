@@ -6,7 +6,7 @@ export const institutionSchema = z.object({
   deadlineDays: z.number().describe('Number of days from death until action is recommended/required'),
   urgency: z.enum(['urgent', 'soon', 'later']).describe('Urgency level based on deadline'),
   reasonForDeadline: z.string().describe('Brief explanation of why this deadline matters'),
-  letter: z.string().describe('Concise formal letter (150 words max) ready to mail, with placeholders for signature'),
+  letter: z.string().describe('Concise formal letter (100 words max) ready to mail, with placeholders for signature'),
   evidenceNeeded: z.array(z.string()).describe('List of documents/evidence needed to submit with the letter'),
 })
 
@@ -17,7 +17,7 @@ export const memorialItemSchema = z.object({
 })
 
 export const generationResponseSchema = z.object({
-  institutions: z.array(institutionSchema).length(6).describe('Exactly 6 prioritized institutions to contact'),
+  institutions: z.array(institutionSchema).length(8).describe('Exactly 8 prioritized institutions to contact'),
   memorialItems: z.array(memorialItemSchema).length(3).describe('Exactly 3 memorial items: funeral_home letter, obituary draft, and eulogy opening'),
 })
 

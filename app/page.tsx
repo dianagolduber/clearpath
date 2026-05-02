@@ -2,17 +2,17 @@
 
 import { useState } from 'react'
 import { InputForm, type FormData } from '@/components/input-form'
-import { InstitutionCards, SkeletonCards } from '@/components/institution-cards'
+import { InstitutionCards } from '@/components/institution-cards'
 import type { Institution, MemorialItem } from '@/lib/types'
 
 export default function Home() {
   const [institutions, setInstitutions] = useState<Institution[]>([])
   const [memorialItems, setMemorialItems] = useState<MemorialItem[]>([])
   const [isLoading, setIsLoading] = useState(false)
-  const [isStreaming, setIsStreaming] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [userDescription, setUserDescription] = useState('')
   const [deceasedName, setDeceasedName] = useState('')
+  const [loadingState, setLoadingState] = useState('')
 
   const handleSubmit = async (data: FormData) => {
     // Build a natural-language description from structured fields
@@ -26,10 +26,10 @@ export default function Home() {
     const description = `${fullName} passed away${datePart}. They lived in ${data.state}.${accountsPart}`
 
     setIsLoading(true)
-    setIsStreaming(true)
     setError(null)
     setUserDescription(description)
     setDeceasedName(fullName)
+    setLoadingState(data.state || 'Arizona')
     setInstitutions([])
     setMemorialItems([])
     
@@ -40,53 +40,19 @@ export default function Home() {
         body: JSON.stringify({ description }),
       })
       
+      const responseData = await response.json()
+      
       if (!response.ok) {
-        const errData = await response.json()
-        throw new Error(errData.error || 'Failed to generate letters')
+        throw new Error(responseData.error || 'Failed to generate letters')
       }
 
-      // Read the streaming response
-      const reader = response.body?.getReader()
-      if (!reader) throw new Error('No response body')
-
-      const decoder = new TextDecoder()
-      let fullText = ''
-
-      while (true) {
-        const { done, value } = await reader.read()
-        if (done) break
-        fullText += decoder.decode(value, { stream: true })
-        
-        // Try to parse partial JSON for progressive updates
-        try {
-          const parsed = JSON.parse(fullText)
-          if (parsed.institutions) {
-            const sorted = [...parsed.institutions].sort((a: Institution, b: Institution) => a.deadlineDays - b.deadlineDays)
-            setInstitutions(sorted)
-          }
-          if (parsed.memorialItems) {
-            setMemorialItems(parsed.memorialItems)
-          }
-        } catch {
-          // JSON not complete yet, continue streaming
-        }
-      }
-
-      // Final parse
-      try {
-        const parsed = JSON.parse(fullText)
-        const sorted = [...(parsed.institutions || [])].sort((a: Institution, b: Institution) => a.deadlineDays - b.deadlineDays)
-        setInstitutions(sorted)
-        setMemorialItems(parsed.memorialItems ?? [])
-      } catch (parseErr) {
-        console.error('[v0] Failed to parse final response:', parseErr)
-        throw new Error('Failed to parse response')
-      }
+      const sorted = [...(responseData.institutions || [])].sort((a: Institution, b: Institution) => a.deadlineDays - b.deadlineDays)
+      setInstitutions(sorted)
+      setMemorialItems(responseData.memorialItems ?? [])
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
     } finally {
       setIsLoading(false)
-      setIsStreaming(false)
     }
   }
 
@@ -135,8 +101,18 @@ export default function Home() {
   return (
     <main className="min-h-screen">
       <div className="container mx-auto px-4 py-8 sm:py-12 lg:py-16">
-        {isStreaming ? (
-          <SkeletonCards />
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6">
+            <div className="w-16 h-16 border-4 border-muted border-t-primary rounded-full animate-spin" />
+            <div className="text-center max-w-md">
+              <h2 className="font-serif text-2xl sm:text-3xl text-foreground mb-3">
+                Drafting your letters...
+              </h2>
+              <p className="text-muted-foreground">
+                This takes about 20 seconds. We&apos;re researching deadlines and drafting letters specific to {loadingState}.
+              </p>
+            </div>
+          </div>
         ) : institutions.length === 0 ? (
           <div className="flex flex-col items-center gap-8 sm:gap-12">
             <header className="text-center max-w-2xl">

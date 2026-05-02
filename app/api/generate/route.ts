@@ -1,4 +1,4 @@
-import { streamText, Output } from 'ai'
+import { generateText, Output } from 'ai'
 import { createOpenAI } from '@ai-sdk/openai'
 import { generationResponseSchema } from '@/lib/types'
 
@@ -15,14 +15,14 @@ export async function POST(req: Request) {
       return Response.json({ error: 'Description is required' }, { status: 400 })
     }
 
-    const result = streamText({
+    const { output } = await generateText({
       model: openai('anthropic/claude-sonnet-4-5'),
-      system: `You are a compassionate estate administration assistant for Arizona. Generate concise, formal letters (150 words max each).
+      system: `You are a compassionate estate administration assistant for Arizona. Generate very concise, formal letters (100 words max each).
 
-Generate exactly 6 institutions and 3 memorial items.
+Generate exactly 8 institutions and 3 memorial items.
 
-## Institutions (exactly 6)
-For each: name, category, deadlineDays, urgency (urgent/soon/later), reasonForDeadline, letter (150 words max, formal business format), evidenceNeeded array.
+## Institutions (exactly 8)
+For each: name, category, deadlineDays, urgency (urgent/soon/later), reasonForDeadline, letter (100 words max, formal business format), evidenceNeeded array.
 
 Priority order:
 1. Social Security Administration (urgent)
@@ -31,13 +31,15 @@ Priority order:
 4. Insurance companies
 5. Employers/retirement
 6. Utilities (APS, SRP, etc.)
+7. Credit card companies
+8. Other relevant Arizona institutions
 
 ## Memorial Items (exactly 3)
-1. funeral_home — Brief formal letter to funeral home (100 words)
+1. funeral_home — Brief formal letter to funeral home (80 words)
 2. obituary — Warm obituary (100 words)
-3. eulogy_opening — Heartfelt eulogy opening (150 words)
+3. eulogy_opening — Heartfelt eulogy opening (120 words)
 
-Keep all content concise. Use Arizona law references (A.R.S.) where applicable.`,
+Keep all content very concise. Use Arizona law references (A.R.S.) where applicable.`,
       output: Output.object({
         schema: generationResponseSchema,
       }),
@@ -49,7 +51,10 @@ Keep all content concise. Use Arizona law references (A.R.S.) where applicable.`
       ],
     })
 
-    return result.toTextStreamResponse()
+    return Response.json({
+      institutions: output?.institutions ?? [],
+      memorialItems: output?.memorialItems ?? [],
+    })
   } catch (error) {
     console.error('[v0] Generation error:', error)
     const message = error instanceof Error ? error.message : 'Unknown error'
