@@ -108,6 +108,24 @@ export default function Home() {
                 We draft the letters. We track the deadlines. You take care of your family.
               </p>
             </header>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-3xl">
+              <div className="bg-card border border-border rounded-lg p-4 text-center">
+                <div className="text-2xl mb-2">&#9993;</div>
+                <h3 className="font-medium text-foreground text-sm mb-1">Ready-to-Mail Letters</h3>
+                <p className="text-xs text-muted-foreground">Arizona-specific notifications for banks, SSA, insurance, and more</p>
+              </div>
+              <div className="bg-card border border-border rounded-lg p-4 text-center">
+                <div className="text-2xl mb-2">&#128101;</div>
+                <h3 className="font-medium text-foreground text-sm mb-1">Assign to Family</h3>
+                <p className="text-xs text-muted-foreground">Divide tasks among family members with SMS reminders</p>
+              </div>
+              <div className="bg-card border border-border rounded-lg p-4 text-center">
+                <div className="text-2xl mb-2">&#128338;</div>
+                <h3 className="font-medium text-foreground text-sm mb-1">Track Deadlines</h3>
+                <p className="text-xs text-muted-foreground">Prioritized by urgency so nothing falls through the cracks</p>
+              </div>
+            </div>
             
             <InputForm onSubmit={handleSubmit} isLoading={isLoading} />
             
