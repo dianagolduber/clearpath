@@ -86,36 +86,35 @@ function AssignSection({
   onRemove,
   onSend,
 }: {
-  assignees: { name: string; phone: string }[]
-  onAdd: (name: string, phone: string) => void
+  assignees: { name: string; email: string }[]
+  onAdd: (name: string, email: string) => void
   onRemove: (name: string) => void
-  onSend: (assignees: { name: string; phone: string }[]) => void
+  onSend: (assignees: { name: string; email: string }[]) => void
 }) {
   const [isAdding, setIsAdding] = useState(false)
   const [nameInput, setNameInput] = useState('')
-  const [phoneInput, setPhoneInput] = useState('')
+  const [emailInput, setEmailInput] = useState('')
   const [isSending, setIsSending] = useState(false)
 
   const handleAdd = () => {
     const name = nameInput.trim()
     if (!name) return
-    onAdd(name, phoneInput.trim())
+    onAdd(name, emailInput.trim())
     setNameInput('')
-    setPhoneInput('')
+    setEmailInput('')
     setIsAdding(false)
   }
 
   const handleSendClick = async () => {
-    console.log('[v0] Notify button clicked, assignees with phone:', assigneesWithPhone)
     setIsSending(true)
     try {
-      await onSend(assigneesWithPhone)
+      await onSend(assigneesWithEmail)
     } finally {
       setIsSending(false)
     }
   }
 
-  const assigneesWithPhone = assignees.filter(a => a.phone)
+  const assigneesWithEmail = assignees.filter(a => a.email && a.email.includes('@'))
 
   return (
     <div className="pt-3 border-t border-border/50">
@@ -133,7 +132,7 @@ function AssignSection({
           >
             <User className="h-3 w-3" />
             {a.name}
-            {a.phone && <span className="opacity-60">{a.phone}</span>}
+            {a.email && <span className="opacity-60 truncate max-w-24">{a.email}</span>}
             <button
               onClick={() => onRemove(a.name)}
               aria-label={`Remove ${a.name}`}
@@ -154,7 +153,7 @@ function AssignSection({
           </button>
         )}
 
-        {assigneesWithPhone.length > 0 && (
+        {assigneesWithEmail.length > 0 && (
           <button
             onClick={handleSendClick}
             disabled={isSending}
@@ -168,7 +167,7 @@ function AssignSection({
             ) : (
               <>
                 <Send className="h-3 w-3" />
-                Notify
+                Email
               </>
             )}
           </button>
@@ -186,17 +185,18 @@ function AssignSection({
             className="flex-1 min-w-28 h-8 text-xs"
           />
           <Input
-            value={phoneInput}
-            onChange={e => setPhoneInput(e.target.value)}
+            type="email"
+            value={emailInput}
+            onChange={e => setEmailInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleAdd()}
-            placeholder="Phone (optional)"
-            className="w-36 h-8 text-xs"
+            placeholder="Email (optional)"
+            className="w-44 h-8 text-xs"
           />
           <Button variant="default" size="sm" onClick={handleAdd} className="h-8 text-xs">Add</Button>
           <Button
             variant="outline"
             size="sm"
-            onClick={() => { setIsAdding(false); setNameInput(''); setPhoneInput('') }}
+            onClick={() => { setIsAdding(false); setNameInput(''); setEmailInput('') }}
             className="h-8 text-xs"
           >
             Cancel
@@ -210,13 +210,13 @@ function AssignSection({
 // ── Funeral Checklist ──────────────────────────────────────────────────────
 function FuneralChecklist({
   deceasedName,
-  onSendSms,
+  onSendEmail,
 }: {
   deceasedName: string
-  onSendSms: (messages: { to: string; name: string; taskDetails: string; deceasedName: string; taskCount: number }[]) => Promise<void>
+  onSendEmail: (emails: { to: string; name: string; institutionName: string; deadlineDays: number; deceasedName: string; letter: string }[]) => Promise<void>
 }) {
   const [checkedItems, setCheckedItems] = useState<Set<number>>(new Set())
-  const [assignees, setAssignees] = useState<{ name: string; phone: string }[]>([])
+  const [assignees, setAssignees] = useState<{ name: string; email: string }[]>([])
 
   const toggleItem = (index: number) => {
     setCheckedItems(prev => {
@@ -257,14 +257,15 @@ function FuneralChecklist({
         </div>
         <AssignSection
           assignees={assignees}
-          onAdd={(name, phone) => setAssignees(prev => [...prev.filter(a => a.name !== name), { name, phone }])}
+          onAdd={(name, email) => setAssignees(prev => [...prev.filter(a => a.name !== name), { name, email }])}
           onRemove={(name) => setAssignees(prev => prev.filter(a => a.name !== name))}
-          onSend={(withPhone) => onSendSms(withPhone.map(a => ({
-            to: a.phone,
+          onSend={(withEmail) => onSendEmail(withEmail.map(a => ({
+            to: a.email,
             name: a.name,
-            taskDetails: '• Funeral Checklist',
+            institutionName: 'Funeral Checklist',
+            deadlineDays: 0,
             deceasedName,
-            taskCount: 1,
+            letter: FUNERAL_CHECKLIST_ITEMS.map((item, i) => `${checkedItems.has(i) ? '✓' : '○'} ${item}`).join('\n'),
           })))}
         />
       </CardContent>
@@ -276,17 +277,17 @@ function FuneralChecklist({
 function MemorialCard({
   item,
   deceasedName,
-  onSendSms,
+  onSendEmail,
 }: {
   item: MemorialItem
   deceasedName: string
-  onSendSms: (messages: { to: string; name: string; taskDetails: string; deceasedName: string; taskCount: number }[]) => Promise<void>
+  onSendEmail: (emails: { to: string; name: string; institutionName: string; deadlineDays: number; deceasedName: string; letter: string }[]) => Promise<void>
 }) {
   const [isOpen, setIsOpen] = useState(false)
   const [copyText, setCopyText] = useState('Copy')
   const [isEditing, setIsEditing] = useState(false)
   const [editedContent, setEditedContent] = useState(item.content)
-  const [assignees, setAssignees] = useState<{ name: string; phone: string }[]>([])
+  const [assignees, setAssignees] = useState<{ name: string; email: string }[]>([])
 
   const label = MEMORIAL_LABELS[item.type] || item.title
 
@@ -345,14 +346,15 @@ function MemorialCard({
 
         <AssignSection
           assignees={assignees}
-          onAdd={(name, phone) => setAssignees(prev => [...prev.filter(a => a.name !== name), { name, phone }])}
+          onAdd={(name, email) => setAssignees(prev => [...prev.filter(a => a.name !== name), { name, email }])}
           onRemove={(name) => setAssignees(prev => prev.filter(a => a.name !== name))}
-          onSend={(withPhone) => onSendSms(withPhone.map(a => ({
-            to: a.phone,
+          onSend={(withEmail) => onSendEmail(withEmail.map(a => ({
+            to: a.email,
             name: a.name,
-            taskDetails: `• ${label}`,
+            institutionName: label,
+            deadlineDays: 0,
             deceasedName,
-            taskCount: 1,
+            letter: editedContent,
           })))}
         />
       </CardContent>
@@ -373,7 +375,7 @@ function UrgencyBadge({ urgency }: { urgency: Institution['urgency'] }) {
 
 // ── Institution Card ───────────────────────────────────────────────────────
 function InstitutionCard({ 
-  institution, index, sent, onVerify, onMarkSent, deceasedName, onSendSms,
+  institution, index, sent, onVerify, onMarkSent, deceasedName, onSendEmail,
 }: { 
   institution: Institution & { verified?: boolean }
   index: number
@@ -381,7 +383,7 @@ function InstitutionCard({
   onVerify: (institutionName: string, index: number) => Promise<{ refinedLetter: string; sources: string[] }>
   onMarkSent: (index: number) => void
   deceasedName: string
-  onSendSms: (messages: { to: string; name: string; taskDetails: string; deceasedName: string; taskCount: number }[]) => Promise<void>
+  onSendEmail: (emails: { to: string; name: string; institutionName: string; deadlineDays: number; deceasedName: string; letter: string }[]) => Promise<void>
 }) {
   const [isLetterOpen, setIsLetterOpen] = useState(false)
   const [isVerifying, setIsVerifying] = useState(false)
@@ -390,7 +392,7 @@ function InstitutionCard({
   const [copyText, setCopyText] = useState('Copy Letter')
   const [isEditing, setIsEditing] = useState(false)
   const [editedLetter, setEditedLetter] = useState(institution.letter)
-  const [assignees, setAssignees] = useState<{ name: string; phone: string }[]>([])
+  const [assignees, setAssignees] = useState<{ name: string; email: string }[]>([])
 
   const handleVerify = async () => {
     setIsVerifying(true)
@@ -513,14 +515,15 @@ function InstitutionCard({
 
         <AssignSection
           assignees={assignees}
-          onAdd={(name, phone) => setAssignees(prev => [...prev.filter(a => a.name !== name), { name, phone }])}
+          onAdd={(name, email) => setAssignees(prev => [...prev.filter(a => a.name !== name), { name, email }])}
           onRemove={(name) => setAssignees(prev => prev.filter(a => a.name !== name))}
-          onSend={(withPhone) => onSendSms(withPhone.map(a => ({
-            to: a.phone,
+          onSend={(withEmail) => onSendEmail(withEmail.map(a => ({
+            to: a.email,
             name: a.name,
-            taskDetails: `• ${institution.name} (${institution.deadlineDays} days)`,
+            institutionName: institution.name,
+            deadlineDays: institution.deadlineDays,
             deceasedName,
-            taskCount: 1,
+            letter: editedLetter,
           })))}
         />
       </CardContent>
@@ -534,18 +537,18 @@ export function InstitutionCards({ institutions, memorialItems, onVerify, onStar
 
   const handleMarkSent = (index: number) => setSentIndices(prev => new Set(prev).add(index))
 
-  const handleSendSms = async (messages: { to: string; name: string; taskDetails: string; deceasedName: string; taskCount: number }[]) => {
+  const handleSendEmail = async (emails: { to: string; name: string; institutionName: string; deadlineDays: number; deceasedName: string; letter: string }[]) => {
     try {
-      const response = await fetch('/api/send-sms', {
+      const response = await fetch('/api/send-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages }),
+        body: JSON.stringify({ emails }),
       })
       const data = await response.json()
       if (!response.ok) throw new Error(data.error || 'Failed to send')
-      toast.success(`Notification sent to ${messages.map(m => m.name).join(', ')}!`)
+      toast.success(`Email sent to ${emails.map(e => e.name).join(', ')}!`)
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to send notification')
+      toast.error(err instanceof Error ? err.message : 'Failed to send email')
     }
   }
 
@@ -569,7 +572,7 @@ export function InstitutionCards({ institutions, memorialItems, onVerify, onStar
 
       <div className="mb-6 p-3 bg-muted/40 border border-border rounded-lg">
         <p className="text-sm text-muted-foreground">
-          <span className="font-medium text-foreground">Tip:</span> Assign family members to each task using the "+ Assign" button on any card. Add their phone number to send them an SMS reminder with the deadline.
+          <span className="font-medium text-foreground">Tip:</span> Assign family members to each task using the "+ Assign" button on any card. Add their email to send them the letter and deadline.
         </p>
       </div>
 
@@ -620,14 +623,14 @@ export function InstitutionCards({ institutions, memorialItems, onVerify, onStar
           <div className="flex flex-col gap-4">
             <FuneralChecklist
               deceasedName={deceasedName}
-              onSendSms={handleSendSms}
+              onSendEmail={handleSendEmail}
             />
             {memorialItems.map((item) => (
               <MemorialCard
                 key={item.type}
                 item={item}
                 deceasedName={deceasedName}
-                onSendSms={handleSendSms}
+                onSendEmail={handleSendEmail}
               />
             ))}
           </div>
