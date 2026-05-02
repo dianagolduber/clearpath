@@ -3,10 +3,11 @@
 import { useState } from 'react'
 import { InputForm, type FormData } from '@/components/input-form'
 import { InstitutionCards } from '@/components/institution-cards'
-import type { Institution } from '@/lib/types'
+import type { Institution, MemorialItem } from '@/lib/types'
 
 export default function Home() {
   const [institutions, setInstitutions] = useState<Institution[]>([])
+  const [memorialItems, setMemorialItems] = useState<MemorialItem[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [userDescription, setUserDescription] = useState('')
@@ -41,6 +42,7 @@ export default function Home() {
       // Sort by deadline days
       const sorted = [...data.institutions].sort((a, b) => a.deadlineDays - b.deadlineDays)
       setInstitutions(sorted)
+      setMemorialItems(data.memorialItems ?? [])
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
     } finally {
@@ -84,6 +86,7 @@ export default function Home() {
 
   const handleStartOver = () => {
     setInstitutions([])
+    setMemorialItems([])
     setUserDescription('')
     setError(null)
   }
@@ -111,8 +114,9 @@ export default function Home() {
             )}
           </div>
         ) : (
-          <InstitutionCards 
-            institutions={institutions} 
+          <InstitutionCards
+            institutions={institutions}
+            memorialItems={memorialItems}
             onVerify={handleVerify}
             onStartOver={handleStartOver}
           />

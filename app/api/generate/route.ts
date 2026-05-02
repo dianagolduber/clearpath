@@ -21,31 +21,32 @@ export async function POST(req: Request) {
       model: openai('anthropic/claude-sonnet-4-5'),
       system: `You are a compassionate and knowledgeable estate administration assistant specializing in Arizona law. Your role is to help Arizona families navigate the difficult paperwork after a loved one's death.
 
-Based on the information provided about the deceased, generate a list of 5-8 prioritized institutions that need to be contacted. For each institution, provide:
+Based on the information provided about the deceased, generate TWO things:
 
-1. A formal, ready-to-mail letter that:
-   - Uses proper business letter format
-   - Includes the date and appropriate salutation
-   - Clearly states the purpose (notification of death)
-   - Requests specific actions (account closure, benefit claims, etc.)
-   - Lists the enclosed documents
-   - Ends with signature line: "Sincerely, [Your Name]"
+## 1. Institutions (5-8 items)
+A list of prioritized institutions that need to be contacted. For each institution, provide:
+- A formal, ready-to-mail letter in proper business letter format with date, salutation, body, enclosed documents list, and "Sincerely, [Your Name]" closing
+- Evidence/documents needed
+- Deadline in days and urgency based on Arizona law (A.R.S. statutes where applicable)
 
-2. Evidence needed (documents to include with the letter)
-
-3. Deadline information based on Arizona-specific legal and regulatory requirements
-
-Prioritize institutions in this order for Arizona residents:
-1. Social Security Administration (always included - urgent)
+Prioritize in this order:
+1. Social Security Administration (always first — urgent)
 2. Arizona Department of Revenue & state benefits
-3. Arizona banks and financial institutions
+3. Banks and financial institutions
 4. Insurance companies (life, health, auto)
 5. Employers and retirement accounts
-6. Utilities and services (APS, SRP, water, etc.)
+6. Utilities (APS, SRP, water, etc.)
 7. Credit card companies
 8. Other Arizona-specific institutions
 
-Use Arizona-specific references where applicable (A.R.S. statutes, Arizona court deadlines, etc.). Use professional, empathetic language throughout.`,
+## 2. Memorial Items (exactly 3)
+Generate all three of the following:
+
+**funeral_home** — A formal letter to a funeral home requesting cremation or burial services and transferring arrangements. Use professional language. Leave placeholders like [Funeral Home Name] and [Your Name].
+
+**obituary** — A warm, personal obituary of approximately 150 words written in third person. Use the name and any details provided. Celebrate their life with dignity. End with survivors or a closing sentiment.
+
+**eulogy_opening** — A warm, heartfelt eulogy opening paragraph of approximately 200 words that a family member could read aloud. Use first person ("We gather today..."). It should acknowledge grief, celebrate the person's character, and invite reflection. Use any details provided to personalise it.`,
       output: Output.object({
         schema: generationResponseSchema,
       }),
@@ -58,8 +59,12 @@ Use Arizona-specific references where applicable (A.R.S. statutes, Arizona court
     })
 
     console.log('[v0] Generation successful, institutions count:', output?.institutions?.length ?? 0)
+    console.log('[v0] Memorial items count:', output?.memorialItems?.length ?? 0)
 
-    return Response.json({ institutions: output?.institutions ?? [] })
+    return Response.json({
+      institutions: output?.institutions ?? [],
+      memorialItems: output?.memorialItems ?? [],
+    })
   } catch (error) {
     console.error('[v0] Generation error:', error)
     const message = error instanceof Error ? error.message : 'Unknown error'

@@ -11,12 +11,83 @@ import {
   CollapsibleTrigger 
 } from '@/components/ui/collapsible'
 import { ChevronDown, ChevronUp, CheckCircle2, AlertCircle } from 'lucide-react'
-import type { Institution } from '@/lib/types'
+import type { Institution, MemorialItem } from '@/lib/types'
 
 interface InstitutionCardsProps {
   institutions: Institution[]
+  memorialItems: MemorialItem[]
   onVerify: (institutionName: string, index: number) => Promise<{ refinedLetter: string; sources: string[] }>
   onStartOver: () => void
+}
+
+const MEMORIAL_LABELS: Record<MemorialItem['type'], string> = {
+  funeral_home: 'Funeral Home Notification',
+  obituary: 'Obituary Draft',
+  eulogy_opening: 'Eulogy Opening',
+}
+
+function MemorialCard({ item }: { item: MemorialItem }) {
+  const [isOpen, setIsOpen] = useState(false)
+  const [copyText, setCopyText] = useState('Copy')
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(item.content)
+      setCopyText('Copied!')
+      setTimeout(() => setCopyText('Copy'), 2000)
+    } catch {
+      setCopyText('Copy Failed')
+      setTimeout(() => setCopyText('Copy'), 2000)
+    }
+  }
+
+  return (
+    <Card className="bg-card border-border">
+      <CardHeader className="pb-3">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+          <div className="flex-1">
+            <div className="flex items-center gap-2 flex-wrap mb-1">
+              <CardTitle className="font-serif text-xl text-foreground">
+                {item.title}
+              </CardTitle>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Badge className="bg-[#ede9fe] text-[#5b21b6] border border-[#ddd6fe] font-medium">
+              Memorial
+            </Badge>
+            <span className="text-sm text-muted-foreground whitespace-nowrap">When ready</span>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+          <CollapsibleTrigger asChild>
+            <Button variant="outline" className="w-full justify-between">
+              {isOpen ? 'Hide' : 'View'}
+              {isOpen ? (
+                <ChevronUp className="h-4 w-4 ml-2" />
+              ) : (
+                <ChevronDown className="h-4 w-4 ml-2" />
+              )}
+            </Button>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="mt-4">
+            <div className="bg-white border border-border rounded-lg p-4 sm:p-6">
+              <pre className="whitespace-pre-wrap font-sans text-sm text-foreground leading-relaxed">
+                {item.content}
+              </pre>
+            </div>
+            <div className="mt-4">
+              <Button variant="outline" onClick={handleCopy}>
+                {copyText}
+              </Button>
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+      </CardContent>
+    </Card>
+  )
 }
 
 function UrgencyBadge({ urgency }: { urgency: Institution['urgency'] }) {
@@ -206,7 +277,7 @@ function InstitutionCard({
   )
 }
 
-export function InstitutionCards({ institutions, onVerify, onStartOver }: InstitutionCardsProps) {
+export function InstitutionCards({ institutions, memorialItems, onVerify, onStartOver }: InstitutionCardsProps) {
   const [sentIndices, setSentIndices] = useState<Set<number>>(new Set())
 
   const handleMarkSent = (index: number) => {
@@ -277,6 +348,20 @@ export function InstitutionCards({ institutions, onVerify, onStartOver }: Instit
           />
         ))}
       </div>
+
+      {memorialItems.length > 0 && (
+        <div className="mt-12">
+          <div className="mb-6">
+            <h2 className="font-serif text-2xl sm:text-3xl text-foreground mb-1">Memorial Materials</h2>
+            <p className="text-muted-foreground text-sm">Drafts to help you honor your loved one — complete when you are ready.</p>
+          </div>
+          <div className="flex flex-col gap-4">
+            {memorialItems.map((item) => (
+              <MemorialCard key={item.type} item={item} />
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
