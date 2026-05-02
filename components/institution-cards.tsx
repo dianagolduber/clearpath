@@ -485,9 +485,17 @@ function InstitutionCard({
                 )}
                 {sources.length > 0 && (
                   <div className="mt-4 p-3 bg-muted/50 rounded-lg">
-                    <h5 className="text-xs font-medium text-muted-foreground mb-2">Sources Used:</h5>
+                    <h5 className="text-xs font-medium text-muted-foreground mb-2">Sources Verified:</h5>
                     <ul className="text-xs text-muted-foreground space-y-1">
-                      {sources.map((source, i) => <li key={i} className="truncate">{source}</li>)}
+                      {sources.map((source, i) => {
+                        try {
+                          const url = new URL(source)
+                          const domain = url.hostname.replace('www.', '')
+                          return <li key={i} className="truncate">• {domain}</li>
+                        } catch {
+                          return <li key={i} className="truncate">• {source}</li>
+                        }
+                      })}
                     </ul>
                   </div>
                 )}
