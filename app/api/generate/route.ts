@@ -1,5 +1,11 @@
 import { generateText, Output } from 'ai'
+import { createOpenAI } from '@ai-sdk/openai'
 import { generationResponseSchema } from '@/lib/types'
+
+const openai = createOpenAI({
+  baseURL: 'https://ai-gateway.vercel.sh/v1',
+  apiKey: process.env.VERCEL_AI_GATEWAY_TOKEN,
+})
 
 export async function POST(req: Request) {
   try {
@@ -12,7 +18,7 @@ export async function POST(req: Request) {
     console.log('[v0] Starting generation with description:', description.substring(0, 100))
 
     const { output } = await generateText({
-      model: 'anthropic/claude-sonnet-4-5-20250514',
+      model: openai('anthropic/claude-sonnet-4-5'),
       system: `You are a compassionate and knowledgeable estate administration assistant. Your role is to help families navigate the difficult paperwork after a loved one's death.
 
 Based on the information provided about the deceased, generate a list of 5-8 prioritized institutions that need to be contacted. For each institution, provide:
