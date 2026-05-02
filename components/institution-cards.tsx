@@ -11,7 +11,8 @@ import {
   CollapsibleContent, 
   CollapsibleTrigger 
 } from '@/components/ui/collapsible'
-import { ChevronDown, ChevronUp, CheckCircle2, AlertCircle, User, X } from 'lucide-react'
+import { ChevronDown, ChevronUp, CheckCircle2, AlertCircle, User, X, Send } from 'lucide-react'
+import { toast } from 'sonner'
 import { Checkbox } from '@/components/ui/checkbox'
 import type { Institution, MemorialItem } from '@/lib/types'
 import { Textarea } from '@/components/ui/textarea'
@@ -411,25 +412,35 @@ function InstitutionCard({
   )
 }
 
+interface FamilyMember {
+  name: string
+  phone: string
+}
+
 // ── Root export ────────────────────────────────────────────────────────────
 export function InstitutionCards({ institutions, memorialItems, onVerify, onStartOver, deceasedName }: InstitutionCardsProps) {
   const [sentIndices, setSentIndices] = useState<Set<number>>(new Set())
-  const [familyInput, setFamilyInput] = useState('')
-  const [familyMembers, setFamilyMembers] = useState<string[]>([])
+  const [familyNameInput, setFamilyNameInput] = useState('')
+  const [familyPhoneInput, setFamilyPhoneInput] = useState('')
+  const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([])
   // cardKey -> list of assigned member names
   const [assignments, setAssignments] = useState<Record<string, string[]>>({})
+  const [isSendingNotifications, setIsSendingNotifications] = useState(false)
 
   const handleMarkSent = (index: number) => setSentIndices(prev => new Set(prev).add(index))
 
   const handleAddMember = () => {
-    const name = familyInput.trim()
-    if (!name || familyMembers.includes(name)) return
-    setFamilyMembers(prev => [...prev, name])
-    setFamilyInput('')
+    const name = familyNameInput.trim()
+    const phone = familyPhoneInput.trim()
+    if (!name) return
+    if (familyMembers.some(m => m.name === name)) return
+    setFamilyMembers(prev => [...prev, { name, phone }])
+    setFamilyNameInput('')
+    setFamilyPhoneInput('')
   }
 
   const handleRemoveMember = (name: string) => {
-    setFamilyMembers(prev => prev.filter(m => m !== name))
+    setFamilyMembers(prev => prev.filter(m => m.name !== name))
     // also remove from all assignments
     setAssignments(prev => {
       const next: Record<string, string[]> = {}
@@ -438,6 +449,62 @@ export function InstitutionCards({ institutions, memorialItems, onVerify, onStar
       }
       return next
     })
+  }
+
+  // Build task list for a family member
+  const getTasksForMember = (memberName: string): string[] => {
+    const tasks: string[] = []
+    for (const [cardKey, names] of Object.entries(assignments)) {
+      if (!names.includes(memberName)) continue
+      if (cardKey.startsWith('institution-')) {
+        const idx = parseInt(cardKey.replace('institution-', ''))
+        const inst = institutions[idx]
+        if (inst) tasks.push(`${inst.name} (${inst.deadlineDays} days)`)
+      } else if (cardKey === 'checklist') {
+        tasks.push('Funeral Checklist')
+      } else if (cardKey.startsWith('memorial-')) {
+        const type = cardKey.replace('memorial-', '') as keyof typeof MEMORIAL_LABELS
+        tasks.push(MEMORIAL_LABELS[type] || cardKey)
+      }
+    }
+    return tasks
+  }
+
+  const handleSendNotifications = async () => {
+    const membersWithTasks = familyMembers.filter(m => m.phone && getTasksForMember(m.name).length > 0)
+    if (membersWithTasks.length === 0) {
+      toast.error('No members with phone numbers and assigned tasks to notify')
+      return
+    }
+
+    setIsSendingNotifications(true)
+    try {
+      const messages = membersWithTasks.map(member => {
+        const tasks = getTasksForMember(member.name)
+        return {
+          to: member.phone,
+          name: member.name,
+          taskDetails: tasks.map(t => `• ${t}`).join('\n'),
+          deceasedName: deceasedName || 'your loved one',
+          taskCount: tasks.length,
+        }
+      })
+
+      const response = await fetch('/api/send-sms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages }),
+      })
+
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || 'Failed to send notifications')
+
+      toast.success(`Sent ${data.sent} notification${data.sent !== 1 ? 's' : ''}!`)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to send notifications')
+    } finally {
+      setIsSendingNotifications(false)
+    }
   }
 
   const handleAssign = (cardKey: string, name: string) => {
@@ -493,25 +560,50 @@ export function InstitutionCards({ institutions, memorialItems, onVerify, onStar
 
       {/* Family member management */}
       <div className="mb-8 p-4 bg-muted/30 border border-border rounded-lg">
-        <h3 className="text-sm font-medium text-foreground mb-3">Family Members</h3>
-        <p className="text-xs text-muted-foreground mb-3">Add names here, then assign them directly on each card below.</p>
-        <div className="flex gap-2 mb-3">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm font-medium text-foreground">Family Members</h3>
+          {familyMembers.length > 0 && familyMembers.some(m => m.phone && getTasksForMember(m.name).length > 0) && (
+            <Button
+              variant="default"
+              size="sm"
+              onClick={handleSendNotifications}
+              disabled={isSendingNotifications}
+              className="h-8 text-xs"
+            >
+              {isSendingNotifications ? (
+                <><Spinner className="mr-1.5 h-3 w-3" />Sending...</>
+              ) : (
+                <><Send className="mr-1.5 h-3 w-3" />Send Notifications</>
+              )}
+            </Button>
+          )}
+        </div>
+        <p className="text-xs text-muted-foreground mb-3">Add family members, then assign them to cards below. Add a phone number to enable SMS notifications.</p>
+        <div className="flex gap-2 mb-3 flex-wrap">
           <Input
-            value={familyInput}
-            onChange={e => setFamilyInput(e.target.value)}
+            value={familyNameInput}
+            onChange={e => setFamilyNameInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleAddMember()}
-            placeholder="Enter a name and press Enter"
-            className="flex-1 h-9 text-sm"
+            placeholder="Name"
+            className="flex-1 min-w-32 h-9 text-sm"
+          />
+          <Input
+            value={familyPhoneInput}
+            onChange={e => setFamilyPhoneInput(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && handleAddMember()}
+            placeholder="Phone (optional)"
+            className="w-36 h-9 text-sm"
           />
           <Button variant="outline" onClick={handleAddMember} className="h-9 text-sm shrink-0">Add</Button>
         </div>
         {familyMembers.length > 0 && (
           <div className="flex flex-wrap gap-2">
-            {familyMembers.map(name => (
-              <span key={name} className="inline-flex items-center gap-1 bg-background border border-border text-foreground text-xs px-2.5 py-1 rounded-full">
+            {familyMembers.map(member => (
+              <span key={member.name} className="inline-flex items-center gap-1 bg-background border border-border text-foreground text-xs px-2.5 py-1 rounded-full">
                 <User className="h-3 w-3 text-muted-foreground" />
-                {name}
-                <button onClick={() => handleRemoveMember(name)} aria-label={`Remove ${name}`} className="ml-0.5 text-muted-foreground hover:text-foreground">
+                {member.name}
+                {member.phone && <span className="text-muted-foreground">({member.phone})</span>}
+                <button onClick={() => handleRemoveMember(member.name)} aria-label={`Remove ${member.name}`} className="ml-0.5 text-muted-foreground hover:text-foreground">
                   <X className="h-3 w-3" />
                 </button>
               </span>
@@ -530,7 +622,7 @@ export function InstitutionCards({ institutions, memorialItems, onVerify, onStar
             sent={sentIndices.has(i)}
             onVerify={onVerify}
             onMarkSent={handleMarkSent}
-            familyMembers={familyMembers}
+            familyMembers={familyMembers.map(m => m.name)}
             assignments={assignments}
             onAssign={handleAssign}
             onUnassign={handleUnassign}
@@ -547,7 +639,7 @@ export function InstitutionCards({ institutions, memorialItems, onVerify, onStar
           </div>
           <div className="flex flex-col gap-4">
             <FuneralChecklist
-              familyMembers={familyMembers}
+              familyMembers={familyMembers.map(m => m.name)}
               assignments={assignments}
               onAssign={handleAssign}
               onUnassign={handleUnassign}
@@ -556,7 +648,7 @@ export function InstitutionCards({ institutions, memorialItems, onVerify, onStar
               <MemorialCard
                 key={item.type}
                 item={item}
-                familyMembers={familyMembers}
+                familyMembers={familyMembers.map(m => m.name)}
                 assignments={assignments}
                 onAssign={handleAssign}
                 onUnassign={handleUnassign}
