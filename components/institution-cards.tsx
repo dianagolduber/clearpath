@@ -94,6 +94,7 @@ function AssignSection({
   const [isAdding, setIsAdding] = useState(false)
   const [nameInput, setNameInput] = useState('')
   const [phoneInput, setPhoneInput] = useState('')
+  const [isSending, setIsSending] = useState(false)
 
   const handleAdd = () => {
     const name = nameInput.trim()
@@ -102,6 +103,16 @@ function AssignSection({
     setNameInput('')
     setPhoneInput('')
     setIsAdding(false)
+  }
+
+  const handleSendClick = async () => {
+    console.log('[v0] Notify button clicked, assignees with phone:', assigneesWithPhone)
+    setIsSending(true)
+    try {
+      await onSend(assigneesWithPhone)
+    } finally {
+      setIsSending(false)
+    }
   }
 
   const assigneesWithPhone = assignees.filter(a => a.phone)
@@ -145,11 +156,21 @@ function AssignSection({
 
         {assigneesWithPhone.length > 0 && (
           <button
-            onClick={() => onSend(assigneesWithPhone)}
-            className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+            onClick={handleSendClick}
+            disabled={isSending}
+            className="inline-flex items-center gap-1 text-xs text-primary hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <Send className="h-3 w-3" />
-            Notify
+            {isSending ? (
+              <>
+                <Spinner className="h-3 w-3" />
+                Sending...
+              </>
+            ) : (
+              <>
+                <Send className="h-3 w-3" />
+                Notify
+              </>
+            )}
           </button>
         )}
       </div>
