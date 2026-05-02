@@ -185,17 +185,17 @@ export function FamilyAssignment({ institutions, deceasedName }: FamilyAssignmen
                   <span className="text-sm font-medium text-foreground min-w-24">{member.name || 'Unnamed'}</span>
                   <Select
                     value={
-                      assignments.find(a => a.familyMemberId === member.id)?.institutionIndex.toString() || ''
+                      assignments.find(a => a.familyMemberId === member.id)?.institutionIndex.toString() ?? 'none'
                     }
                     onValueChange={(value) =>
-                      handleAssignInstitution(member.id, value ? parseInt(value) : -1)
+                      handleAssignInstitution(member.id, value === 'none' ? -1 : parseInt(value))
                     }
                   >
                     <SelectTrigger className="flex-1">
                       <SelectValue placeholder="Select an institution" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">None</SelectItem>
+                      <SelectItem value="none">None</SelectItem>
                       {institutions.map((inst, idx) => (
                         <SelectItem key={idx} value={idx.toString()}>
                           {inst.name} ({inst.deadlineDays} days)
