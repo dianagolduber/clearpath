@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/collapsible'
 import { ChevronDown, ChevronUp, CheckCircle2, AlertCircle } from 'lucide-react'
 import type { Institution, MemorialItem } from '@/lib/types'
+import { Textarea } from '@/components/ui/textarea'
 
 interface InstitutionCardsProps {
   institutions: Institution[]
@@ -29,10 +30,12 @@ const MEMORIAL_LABELS: Record<MemorialItem['type'], string> = {
 function MemorialCard({ item }: { item: MemorialItem }) {
   const [isOpen, setIsOpen] = useState(false)
   const [copyText, setCopyText] = useState('Copy')
+  const [isEditing, setIsEditing] = useState(false)
+  const [editedContent, setEditedContent] = useState(item.content)
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(item.content)
+      await navigator.clipboard.writeText(editedContent)
       setCopyText('Copied!')
       setTimeout(() => setCopyText('Copy'), 2000)
     } catch {
@@ -73,16 +76,45 @@ function MemorialCard({ item }: { item: MemorialItem }) {
             </Button>
           </CollapsibleTrigger>
           <CollapsibleContent className="mt-4">
-            <div className="bg-white border border-border rounded-lg p-4 sm:p-6">
-              <pre className="whitespace-pre-wrap font-sans text-sm text-foreground leading-relaxed">
-                {item.content}
-              </pre>
-            </div>
-            <div className="mt-4">
-              <Button variant="outline" onClick={handleCopy}>
-                {copyText}
-              </Button>
-            </div>
+            {isEditing ? (
+              <div>
+                <Textarea
+                  value={editedContent}
+                  onChange={(e) => setEditedContent(e.target.value)}
+                  className="min-h-80 font-mono text-sm"
+                />
+                <div className="mt-4 flex gap-2">
+                  <Button onClick={() => setIsEditing(false)} variant="default">
+                    Save Edit
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setEditedContent(item.content)
+                      setIsEditing(false)
+                    }}
+                    variant="outline"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="bg-white border border-border rounded-lg p-4 sm:p-6">
+                  <pre className="whitespace-pre-wrap font-sans text-sm text-foreground leading-relaxed">
+                    {editedContent}
+                  </pre>
+                </div>
+                <div className="mt-4 flex gap-2 flex-wrap">
+                  <Button variant="outline" onClick={handleCopy}>
+                    {copyText}
+                  </Button>
+                  <Button variant="outline" onClick={() => setIsEditing(true)}>
+                    Edit
+                  </Button>
+                </div>
+              </>
+            )}
           </CollapsibleContent>
         </Collapsible>
       </CardContent>
@@ -128,6 +160,8 @@ function InstitutionCard({
   const [verifyError, setVerifyError] = useState<string | null>(null)
   const [sources, setSources] = useState<string[]>([])
   const [copyText, setCopyText] = useState('Copy Letter')
+  const [isEditing, setIsEditing] = useState(false)
+  const [editedLetter, setEditedLetter] = useState(institution.letter)
 
   const handleVerify = async () => {
     setIsVerifying(true)
@@ -144,7 +178,7 @@ function InstitutionCard({
 
   const handleCopyLetter = async () => {
     try {
-      await navigator.clipboard.writeText(institution.letter)
+      await navigator.clipboard.writeText(editedLetter)
       setCopyText('Copied!')
       setTimeout(() => setCopyText('Copy Letter'), 2000)
     } catch (err) {
@@ -206,69 +240,103 @@ function InstitutionCard({
             </Button>
           </CollapsibleTrigger>
           <CollapsibleContent className="mt-4">
-            <div className="bg-white border border-border rounded-lg p-4 sm:p-6">
-              <pre className="whitespace-pre-wrap font-sans text-sm text-foreground leading-relaxed">
-                {institution.letter}
-              </pre>
-            </div>
-            
-            <div className="mt-4 flex flex-col sm:flex-row gap-2 flex-wrap">
-              <Button
-                onClick={handleVerify}
-                disabled={isVerifying || institution.verified}
-                variant={institution.verified ? 'outline' : 'default'}
-                className="flex-1 sm:flex-none"
-              >
-                {isVerifying ? (
-                  <>
-                    <Spinner className="mr-2" />
-                    Verifying...
-                  </>
-                ) : institution.verified ? (
-                  <>
-                    <CheckCircle2 className="h-4 w-4 mr-2" />
-                    Verified
-                  </>
-                ) : (
-                  'Verify with Current Law'
-                )}
-              </Button>
-              
-              <Button
-                variant="outline"
-                onClick={handleCopyLetter}
-                className="flex-1 sm:flex-none"
-              >
-                {copyText}
-              </Button>
+            {isEditing ? (
+              <div>
+                <Textarea
+                  value={editedLetter}
+                  onChange={(e) => setEditedLetter(e.target.value)}
+                  className="min-h-80 font-mono text-sm"
+                />
+                <div className="mt-4 flex gap-2">
+                  <Button onClick={() => setIsEditing(false)} variant="default">
+                    Save Edit
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setEditedLetter(institution.letter)
+                      setIsEditing(false)
+                    }}
+                    variant="outline"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="bg-white border border-border rounded-lg p-4 sm:p-6">
+                  <pre className="whitespace-pre-wrap font-sans text-sm text-foreground leading-relaxed">
+                    {editedLetter}
+                  </pre>
+                </div>
+                
+                <div className="mt-4 flex flex-col sm:flex-row gap-2 flex-wrap">
+                  <Button
+                    onClick={handleVerify}
+                    disabled={isVerifying || institution.verified}
+                    variant={institution.verified ? 'outline' : 'default'}
+                    className="flex-1 sm:flex-none"
+                  >
+                    {isVerifying ? (
+                      <>
+                        <Spinner className="mr-2" />
+                        Verifying...
+                      </>
+                    ) : institution.verified ? (
+                      <>
+                        <CheckCircle2 className="h-4 w-4 mr-2" />
+                        Verified
+                      </>
+                    ) : (
+                      'Verify with Current Law'
+                    )}
+                  </Button>
+                  
+                  <Button
+                    variant="outline"
+                    onClick={handleCopyLetter}
+                    className="flex-1 sm:flex-none"
+                  >
+                    {copyText}
+                  </Button>
 
-              {!sent && (
-                <Button
-                  variant="outline"
-                  onClick={() => onMarkSent(index)}
-                  className="flex-1 sm:flex-none border-green-300 text-green-800 hover:bg-green-50"
-                >
-                  Mark as sent
-                </Button>
-              )}
-            </div>
-            
-            {verifyError && (
-              <div className="mt-3 flex items-center gap-2 text-sm text-destructive">
-                <AlertCircle className="h-4 w-4" />
-                {verifyError}
-              </div>
-            )}
-            
-            {sources.length > 0 && (
-              <div className="mt-4 p-3 bg-muted/50 rounded-lg">
-                <h5 className="text-xs font-medium text-muted-foreground mb-2">Sources Used:</h5>
-                <ul className="text-xs text-muted-foreground space-y-1">
-                  {sources.map((source, i) => (
-                    <li key={i} className="truncate">{source}</li>
-                  ))}
-                </ul>
-              </div>
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsEditing(true)}
+                    className="flex-1 sm:flex-none"
+                  >
+                    Edit Letter
+                  </Button>
+
+                  {!sent && (
+                    <Button
+                      variant="outline"
+                      onClick={() => onMarkSent(index)}
+                      className="flex-1 sm:flex-none border-green-300 text-green-800 hover:bg-green-50"
+                    >
+                      Mark as sent
+                    </Button>
+                  )}
+                </div>
+                
+                {verifyError && (
+                  <div className="mt-3 flex items-center gap-2 text-sm text-destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    {verifyError}
+                  </div>
+                )}
+                
+                {sources.length > 0 && (
+                  <div className="mt-4 p-3 bg-muted/50 rounded-lg">
+                    <h5 className="text-xs font-medium text-muted-foreground mb-2">Sources Used:</h5>
+                    <ul className="text-xs text-muted-foreground space-y-1">
+                      {sources.map((source, i) => (
+                        <li key={i} className="truncate">{source}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </>
             )}
           </CollapsibleContent>
         </Collapsible>
