@@ -109,7 +109,7 @@ export default function Home() {
                 Drafting your letters...
               </h2>
               <p className="text-muted-foreground">
-                This takes about 20 seconds. We&apos;re researching deadlines and drafting letters specific to {loadingState}.
+                This takes 30 seconds to 1 minute. We&apos;re researching deadlines and drafting letters specific to {loadingState}.
               </p>
             </div>
           </div>
