@@ -406,6 +406,16 @@ export function InstitutionCards({ institutions, memorialItems, onVerify, onStar
         </div>
       </div>
 
+      {institutions.length > 0 && (
+        <div className="mb-8">
+          <FamilyAssignment
+            institutions={institutions}
+            memorialItems={memorialItems}
+            deceasedName={deceasedName || 'your loved one'}
+          />
+        </div>
+      )}
+
       <div className="flex flex-col gap-4">
         {ordered.map(({ inst, i }) => (
           <InstitutionCard
@@ -418,12 +428,6 @@ export function InstitutionCards({ institutions, memorialItems, onVerify, onStar
           />
         ))}
       </div>
-
-      {institutions.length > 0 && (
-        <div className="mt-12">
-          <FamilyAssignment institutions={institutions} deceasedName={deceasedName || 'your loved one'} />
-        </div>
-      )}
 
       {memorialItems.length > 0 && (
         <div className="mt-12">

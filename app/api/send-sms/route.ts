@@ -24,13 +24,13 @@ export async function POST(req: Request) {
     const results = []
 
     for (const msg of messages) {
-      const { to, name, institutionName, deadlineDays, deceasedName } = msg
+      const { to, name, taskDetails, deceasedName, taskCount } = msg
 
       // Format phone number: remove non-digits and ensure US format
       const cleanPhone = to.replace(/\D/g, '')
       const phoneNumber = cleanPhone.length === 10 ? `+1${cleanPhone}` : `+${cleanPhone}`
 
-      const smsBody = `Hi ${name}, you're handling ${institutionName} for ${deceasedName}. Deadline: ${deadlineDays} days. Letter is ready — reply DONE when sent. — Aftermath`
+      const smsBody = `Hi ${name}, you've been assigned ${taskCount} task${taskCount !== 1 ? 's' : ''} for ${deceasedName}:\n\n${taskDetails}\n\nLetters are ready in Aftermath. — Aftermath`
 
       try {
         const auth = btoa(`${accountSid}:${authToken}`)
