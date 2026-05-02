@@ -483,6 +483,29 @@ function InstitutionCard({
                     <AlertCircle className="h-4 w-4" />{verifyError}
                   </div>
                 )}
+                {sources.length > 0 && (
+                  <div className="mt-4 p-3 bg-muted/50 rounded-lg">
+                    <h5 className="text-xs font-medium text-muted-foreground mb-2">Sources used to verify this letter:</h5>
+                    <ul className="space-y-1">
+                      {sources.map((source, i) => {
+                        let domain = source
+                        try { domain = new URL(source).hostname.replace('www.', '') } catch {}
+                        return (
+                          <li key={i}>
+                            <a
+                              href={source}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs text-primary underline underline-offset-2 hover:opacity-80 truncate block"
+                            >
+                              {domain}
+                            </a>
+                          </li>
+                        )
+                      })}
+                    </ul>
+                  </div>
+                )}
               </>
             )}
           </CollapsibleContent>
