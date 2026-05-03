@@ -136,21 +136,20 @@ export default function Home() {
               </p>
             </header>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-3xl">
-              <div className="bg-card border border-border rounded-lg p-4 text-center">
-                <div className="text-2xl mb-2">&#9993;</div>
-                <h3 className="font-medium text-foreground text-sm mb-1">Ready-to-Mail Letters</h3>
-                <p className="text-xs text-muted-foreground">8 state-specific notification letters for banks, insurance, Social Security, and more — drafted and prioritized by legal deadline</p>
+            <div className="flex items-center justify-center gap-2 sm:gap-4 w-full max-w-3xl text-sm">
+              <div className="flex items-center gap-2">
+                <span className="flex items-center justify-center w-6 h-6 rounded-full bg-foreground text-background text-xs font-medium">1</span>
+                <span className="text-foreground font-medium">Fill out once</span>
               </div>
-              <div className="bg-card border border-border rounded-lg p-4 text-center">
-                <div className="text-2xl mb-2">&#128101;</div>
-                <h3 className="font-medium text-foreground text-sm mb-1">Assign to Family</h3>
-                <p className="text-xs text-muted-foreground">Divide tasks among family members — each person gets an email with their letters and a portal to track what&apos;s been sent</p>
+              <span className="text-muted-foreground">&#8594;</span>
+              <div className="flex items-center gap-2">
+                <span className="flex items-center justify-center w-6 h-6 rounded-full bg-foreground text-background text-xs font-medium">2</span>
+                <span className="text-foreground font-medium">Get 8 letters</span>
               </div>
-              <div className="bg-card border border-border rounded-lg p-4 text-center">
-                <div className="text-2xl mb-2">&#128338;</div>
-                <h3 className="font-medium text-foreground text-sm mb-1">Track Deadlines</h3>
-                <p className="text-xs text-muted-foreground">Banks have 30 days. IRA rollovers, 60. Life insurance, 90. Nothing falls through the cracks.</p>
+              <span className="text-muted-foreground">&#8594;</span>
+              <div className="flex items-center gap-2">
+                <span className="flex items-center justify-center w-6 h-6 rounded-full bg-foreground text-background text-xs font-medium">3</span>
+                <span className="text-foreground font-medium">Assign &amp; track</span>
               </div>
             </div>
             
