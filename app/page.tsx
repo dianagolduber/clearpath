@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { ClipboardList, Mail, Users, ArrowRight } from 'lucide-react'
 import { InputForm, type FormData } from '@/components/input-form'
 import { InstitutionCards } from '@/components/institution-cards'
 import type { Institution, MemorialItem } from '@/lib/types'
@@ -136,21 +137,27 @@ export default function Home() {
               </p>
             </header>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-3xl">
-              <div className="bg-card border border-border rounded-lg p-4 text-center">
-                <div className="text-2xl mb-2">&#9993;</div>
-                <h3 className="font-medium text-foreground text-sm mb-1">Ready-to-Mail Letters</h3>
-                <p className="text-xs text-muted-foreground">State-specific notifications for banks, SSA, insurance, and more</p>
+            <div className="flex flex-col sm:flex-row items-stretch gap-2 w-full max-w-3xl">
+              <div className="flex-1 bg-card border border-border rounded-lg p-4 text-center">
+                <ClipboardList className="mx-auto mb-3 text-muted-foreground" size={22} strokeWidth={1.5} />
+                <h3 className="font-medium text-foreground text-sm mb-1">Fill out once</h3>
+                <p className="text-xs text-muted-foreground">Name, date of passing, state, and any accounts you remember. We&apos;ll fill in the gaps.</p>
               </div>
-              <div className="bg-card border border-border rounded-lg p-4 text-center">
-                <div className="text-2xl mb-2">&#128101;</div>
-                <h3 className="font-medium text-foreground text-sm mb-1">Assign to Family</h3>
-                <p className="text-xs text-muted-foreground">Divide tasks among family members with SMS reminders</p>
+              <div className="hidden sm:flex items-center text-muted-foreground/40 shrink-0">
+                <ArrowRight size={18} />
               </div>
-              <div className="bg-card border border-border rounded-lg p-4 text-center">
-                <div className="text-2xl mb-2">&#128338;</div>
-                <h3 className="font-medium text-foreground text-sm mb-1">Track Deadlines</h3>
-                <p className="text-xs text-muted-foreground">Prioritized by urgency so nothing falls through the cracks</p>
+              <div className="flex-1 bg-card border border-border rounded-lg p-4 text-center">
+                <Mail className="mx-auto mb-3 text-muted-foreground" size={22} strokeWidth={1.5} />
+                <h3 className="font-medium text-foreground text-sm mb-1">Get 8 letters</h3>
+                <p className="text-xs text-muted-foreground">State-specific letters for banks, SSA, insurance, DMV, and more — prioritized by legal deadline.</p>
+              </div>
+              <div className="hidden sm:flex items-center text-muted-foreground/40 shrink-0">
+                <ArrowRight size={18} />
+              </div>
+              <div className="flex-1 bg-card border border-border rounded-lg p-4 text-center">
+                <Users className="mx-auto mb-3 text-muted-foreground" size={22} strokeWidth={1.5} />
+                <h3 className="font-medium text-foreground text-sm mb-1">Assign &amp; track</h3>
+                <p className="text-xs text-muted-foreground">Split tasks across family. Everyone gets their letters, deadlines, and an email portal to track what&apos;s been sent.</p>
               </div>
             </div>
             
