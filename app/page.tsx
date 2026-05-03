@@ -136,20 +136,21 @@ export default function Home() {
               </p>
             </header>
 
-            <div className="flex items-center justify-center gap-2 sm:gap-4 w-full max-w-3xl text-sm">
-              <div className="flex items-center gap-2">
-                <span className="flex items-center justify-center w-6 h-6 rounded-full bg-foreground text-background text-xs font-medium">1</span>
-                <span className="text-foreground font-medium">Fill out once</span>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-3xl">
+              <div className="bg-card border border-border rounded-lg p-4 text-center">
+                <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-foreground text-background text-sm font-medium mb-3">1</span>
+                <h3 className="font-medium text-foreground text-sm mb-1">Fill out once</h3>
+                <p className="text-xs text-muted-foreground">Name, date, state, and any accounts you know about</p>
               </div>
-              <span className="text-muted-foreground">&#8594;</span>
-              <div className="flex items-center gap-2">
-                <span className="flex items-center justify-center w-6 h-6 rounded-full bg-foreground text-background text-xs font-medium">2</span>
-                <span className="text-foreground font-medium">Get 8 letters</span>
+              <div className="bg-card border border-border rounded-lg p-4 text-center">
+                <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-foreground text-background text-sm font-medium mb-3">2</span>
+                <h3 className="font-medium text-foreground text-sm mb-1">Get 8 letters</h3>
+                <p className="text-xs text-muted-foreground">Banks, SSA, insurance, DMV — drafted and ready to send</p>
               </div>
-              <span className="text-muted-foreground">&#8594;</span>
-              <div className="flex items-center gap-2">
-                <span className="flex items-center justify-center w-6 h-6 rounded-full bg-foreground text-background text-xs font-medium">3</span>
-                <span className="text-foreground font-medium">Assign &amp; track</span>
+              <div className="bg-card border border-border rounded-lg p-4 text-center">
+                <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-foreground text-background text-sm font-medium mb-3">3</span>
+                <h3 className="font-medium text-foreground text-sm mb-1">Assign &amp; track</h3>
+                <p className="text-xs text-muted-foreground">Split tasks with family. Everyone gets their letters and deadlines by email.</p>
               </div>
             </div>
             
