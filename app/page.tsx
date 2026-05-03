@@ -100,13 +100,15 @@ export default function Home() {
 
   return (
     <main className="min-h-screen">
-      <div className="bg-background border-b border-border">
-        <div className="container mx-auto px-4 py-10 text-center">
-          <img src="/clear-path-logo.jpg" alt="" aria-hidden="true" className="h-16 w-16 object-contain mx-auto mb-4 rounded-xl" />
-          <h1 className="font-serif text-5xl text-foreground mb-3">Clear Path</h1>
-          <p className="text-lg text-muted-foreground max-w-md mx-auto">Guiding families through what comes after a loss</p>
+      <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-border">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center gap-2">
+            <img src="/clear-path-logo.jpg" alt="" aria-hidden="true" className="h-8 w-8 object-contain rounded-md" />
+            <h1 className="font-serif text-2xl text-foreground">Clear Path</h1>
+          </div>
         </div>
-      </div>
+      </nav>
+
       <div className="container mx-auto px-4 py-8 sm:py-12 lg:py-16">
         {isLoading ? (
           <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6">
