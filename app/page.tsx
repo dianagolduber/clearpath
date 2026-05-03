@@ -126,7 +126,9 @@ export default function Home() {
           <div className="flex flex-col items-center gap-8 sm:gap-12">
             <header className="text-center max-w-2xl">
               <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl text-foreground leading-tight text-balance mb-4">
-                Losing someone is hard. The paperwork doesn&apos;t have to be.
+                Losing someone is hard.
+                <br />
+                The paperwork doesn&apos;t have to be.
               </h1>
               <p className="text-lg sm:text-xl text-muted-foreground leading-relaxed text-pretty">
                 We draft the letters. We track the deadlines. You take care of your family.
