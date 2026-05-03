@@ -25,7 +25,8 @@ Clear Path helps families handle estate notifications after a loss — drafting 
 - **Styling**: Tailwind CSS v4
 - **UI Components**: shadcn/ui
 - **Database & Auth**: Supabase (PostgreSQL with Row Level Security)
-- **AI**: Vercel AI SDK with Claude
+- **AI**: Vercel AI SDK with Claude Sonnet via Vercel AI Gateway
+- **MCP**: Tavily (live state law verification)
 - **Email**: Resend
 
 ## Getting Started
@@ -50,7 +51,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 RESEND_API_KEY=your_resend_api_key
 
 # Production URL (for email links)
-NEXT_PUBLIC_URL=https://your-domain.com
+NEXT_PUBLIC_URL=https://v0-clearpath-estate.vercel.app
 ```
 
 ### Installation
