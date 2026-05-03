@@ -140,17 +140,17 @@ export default function Home() {
               <div className="bg-card border border-border rounded-lg p-4 text-center">
                 <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-foreground text-background text-sm font-medium mb-3">1</span>
                 <h3 className="font-medium text-foreground text-sm mb-1">Fill out once</h3>
-                <p className="text-xs text-muted-foreground">Name, date, state, and any accounts you know about</p>
+                <p className="text-xs text-muted-foreground">Name, date of passing, state, and any accounts you remember. We&apos;ll fill in the gaps.</p>
               </div>
               <div className="bg-card border border-border rounded-lg p-4 text-center">
                 <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-foreground text-background text-sm font-medium mb-3">2</span>
                 <h3 className="font-medium text-foreground text-sm mb-1">Get 8 letters</h3>
-                <p className="text-xs text-muted-foreground">Banks, SSA, insurance, DMV — drafted and ready to send</p>
+                <p className="text-xs text-muted-foreground">State-specific letters for banks, SSA, insurance, DMV, and more — prioritized by legal deadline.</p>
               </div>
               <div className="bg-card border border-border rounded-lg p-4 text-center">
                 <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-foreground text-background text-sm font-medium mb-3">3</span>
                 <h3 className="font-medium text-foreground text-sm mb-1">Assign &amp; track</h3>
-                <p className="text-xs text-muted-foreground">Split tasks with family. Everyone gets their letters and deadlines by email.</p>
+                <p className="text-xs text-muted-foreground">Split tasks across family. Everyone gets their letters, deadlines, and an email portal to track what&apos;s been sent.</p>
               </div>
             </div>
             
