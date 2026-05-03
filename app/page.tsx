@@ -100,10 +100,12 @@ export default function Home() {
 
   return (
     <main className="min-h-screen">
+      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border">
+        <div className="container mx-auto px-4 py-4">
+          <h1 className="font-serif text-3xl text-foreground">Clear Path</h1>
+        </div>
+      </div>
       <div className="container mx-auto px-4 py-8 sm:py-12 lg:py-16">
-        <header className="mb-12">
-          <h1 className="font-serif text-2xl text-foreground">Clear Path</h1>
-        </header>
         {isLoading ? (
           <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6">
             <div className="w-16 h-16 border-4 border-muted border-t-primary rounded-full animate-spin" />
