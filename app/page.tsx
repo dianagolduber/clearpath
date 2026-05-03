@@ -131,8 +131,7 @@ export default function Home() {
                 <span className="whitespace-nowrap">The paperwork doesn&apos;t have to be.</span>
               </h1>
               <p className="text-lg sm:text-xl text-muted-foreground leading-relaxed">
-                <span className="whitespace-nowrap block">We draft the letters.</span>
-                <span className="whitespace-nowrap block">We track the deadlines.</span>
+                <span className="whitespace-nowrap block">We draft the letters. We track the deadlines.</span>
                 <span className="whitespace-nowrap block">You take care of your family.</span>
               </p>
             </header>
