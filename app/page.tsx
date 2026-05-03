@@ -160,12 +160,23 @@ export default function Home() {
             </div>
             
             <InputForm onSubmit={handleSubmit} isLoading={isLoading} />
-            
+
             {error && (
               <div className="w-full max-w-2xl p-4 bg-destructive/10 border border-destructive/20 rounded-lg text-center">
                 <p className="text-destructive">{error}</p>
               </div>
             )}
+
+            <div className="w-full max-w-2xl border-t border-border pt-8 mt-2">
+              <a href="/prepare" className="flex items-center justify-between group bg-card border border-border rounded-xl px-6 py-5 hover:border-foreground/30 transition-all">
+                <div>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Planning ahead?</p>
+                  <p className="font-serif text-lg text-foreground">Prepare your own estate information</p>
+                  <p className="text-sm text-muted-foreground mt-1">Store your accounts, contacts, and wishes so your family has everything they need.</p>
+                </div>
+                <span className="text-muted-foreground group-hover:text-foreground group-hover:translate-x-1 transition-all text-xl ml-4">&#8594;</span>
+              </a>
+            </div>
           </div>
         ) : (
           <InstitutionCards
