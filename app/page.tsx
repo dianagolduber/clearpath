@@ -102,14 +102,9 @@ export default function Home() {
     <main className="min-h-screen">
       <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-border">
         <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <img src="/clear-path-logo.jpg" alt="" aria-hidden="true" className="h-12 w-12 object-contain rounded-md" />
-              <h1 className="font-serif text-3xl text-foreground">Clear Path</h1>
-            </div>
-            <a href="/prepare" className="text-sm font-medium text-muted-foreground hover:text-foreground transition">
-              Prepare
-            </a>
+          <div className="flex items-center gap-3">
+            <img src="/clear-path-logo.jpg" alt="" aria-hidden="true" className="h-12 w-12 object-contain rounded-md" />
+            <h1 className="font-serif text-3xl text-foreground">Clear Path</h1>
           </div>
         </div>
       </nav>
