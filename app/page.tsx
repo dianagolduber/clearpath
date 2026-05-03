@@ -140,17 +140,17 @@ export default function Home() {
               <div className="bg-card border border-border rounded-lg p-4 text-center">
                 <div className="text-2xl mb-2">&#9993;</div>
                 <h3 className="font-medium text-foreground text-sm mb-1">Ready-to-Mail Letters</h3>
-                <p className="text-xs text-muted-foreground">State-specific notifications for banks, SSA, insurance, and more</p>
+                <p className="text-xs text-muted-foreground">8 state-specific notification letters for banks, insurance, Social Security, and more — drafted and prioritized by legal deadline</p>
               </div>
               <div className="bg-card border border-border rounded-lg p-4 text-center">
                 <div className="text-2xl mb-2">&#128101;</div>
                 <h3 className="font-medium text-foreground text-sm mb-1">Assign to Family</h3>
-                <p className="text-xs text-muted-foreground">Divide tasks among family members with SMS reminders</p>
+                <p className="text-xs text-muted-foreground">Divide tasks among family members — each person gets an email with their letters and a portal to track what&apos;s been sent</p>
               </div>
               <div className="bg-card border border-border rounded-lg p-4 text-center">
                 <div className="text-2xl mb-2">&#128338;</div>
                 <h3 className="font-medium text-foreground text-sm mb-1">Track Deadlines</h3>
-                <p className="text-xs text-muted-foreground">Prioritized by urgency so nothing falls through the cracks</p>
+                <p className="text-xs text-muted-foreground">Banks have 30 days. IRA rollovers, 60. Life insurance, 90. Nothing falls through the cracks.</p>
               </div>
             </div>
             
