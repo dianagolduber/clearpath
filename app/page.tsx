@@ -126,10 +126,10 @@ export default function Home() {
           <div className="flex flex-col items-center gap-8 sm:gap-12">
             <header className="text-center max-w-2xl">
               <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl text-foreground leading-tight text-balance mb-4">
-                You don&apos;t have to handle this alone.
+                Losing someone is hard. The paperwork doesn&apos;t have to be.
               </h1>
               <p className="text-lg sm:text-xl text-muted-foreground leading-relaxed text-pretty">
-                We help families organize and draft the estate paperwork. We track deadlines. You focus on what matters.
+                We draft the letters. We track the deadlines. You take care of your family.
               </p>
             </header>
 
@@ -137,7 +137,7 @@ export default function Home() {
               <div className="bg-card border border-border rounded-lg p-4 text-center">
                 <div className="text-2xl mb-2">&#9993;</div>
                 <h3 className="font-medium text-foreground text-sm mb-1">Ready-to-Mail Letters</h3>
-                <p className="text-xs text-muted-foreground">Arizona-specific notifications for banks, SSA, insurance, and more</p>
+                <p className="text-xs text-muted-foreground">State-specific notifications for banks, SSA, insurance, and more</p>
               </div>
               <div className="bg-card border border-border rounded-lg p-4 text-center">
                 <div className="text-2xl mb-2">&#128101;</div>

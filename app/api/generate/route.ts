@@ -17,7 +17,7 @@ export async function POST(req: Request) {
 
     const { output } = await generateText({
       model: openai('anthropic/claude-sonnet-4-5'),
-      system: `You are a compassionate estate administration assistant for Arizona. Generate very concise, formal letters (100 words max each).
+      system: `You are a compassionate estate administration assistant. Generate very concise, formal letters (100 words max each).
 
 Generate exactly 8 institutions and 3 memorial items.
 
@@ -26,20 +26,20 @@ For each: name, category, deadlineDays, urgency (urgent/soon/later), reasonForDe
 
 Priority order:
 1. Social Security Administration (urgent)
-2. Arizona Dept of Revenue / state benefits
+2. State department of revenue / state benefits
 3. Banks/financial institutions
 4. Insurance companies
-5. Employers/retirement
-6. Utilities (APS, SRP, etc.)
+5. Employers/retirement accounts
+6. Utilities
 7. Credit card companies
-8. Other relevant Arizona institutions
+8. Other relevant institutions
+
+Keep all content very concise. Use relevant state laws and regulations where applicable.
 
 ## Memorial Items (exactly 3)
 1. funeral_home — Brief formal letter to funeral home (80 words)
 2. obituary — Warm obituary (100 words)
-3. eulogy_opening — Heartfelt eulogy opening (120 words)
-
-Keep all content very concise. Use Arizona law references (A.R.S.) where applicable.`,
+3. eulogy_opening — Heartfelt eulogy opening (120 words)`,
       output: Output.object({
         schema: generationResponseSchema,
       }),
