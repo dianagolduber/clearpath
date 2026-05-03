@@ -177,7 +177,7 @@ export default function PortalPage() {
       <header className="bg-white border-b border-border">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <h1 className="font-serif text-xl text-foreground">Aftermath</h1>
+            <h1 className="font-serif text-xl text-foreground">Clear Path</h1>
             <span className="text-sm text-muted-foreground">
               Handling affairs for {data.deceasedName}
             </span>
@@ -223,7 +223,7 @@ export default function PortalPage() {
         {/* Footer */}
         <footer className="mt-8 text-center">
           <p className="text-sm text-muted-foreground">
-            Sent by <span className="font-medium">Aftermath</span> — handling what comes after
+            Sent by <span className="font-medium">Clear Path</span> — handling what comes after
           </p>
         </footer>
       </main>

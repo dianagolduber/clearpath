@@ -87,7 +87,7 @@ export async function POST(req: Request) {
                   <tr>
                     <td style="padding: 32px 32px 24px; border-bottom: 1px solid #e5e5e5;">
                       <div style="font-family: Georgia, 'Times New Roman', serif; font-size: 24px; font-weight: 400; color: #171717; margin-bottom: 8px;">
-                        Aftermath
+                        Clear Path
                       </div>
                       <div style="font-size: 14px; color: #737373;">
                         Handling affairs for <strong style="color: #171717;">${deceasedName}</strong>
@@ -128,7 +128,7 @@ export async function POST(req: Request) {
                   <tr>
                     <td style="padding: 24px 32px; background: #fafafa; border-top: 1px solid #e5e5e5; border-radius: 0 0 16px 16px;">
                       <p style="margin: 0; font-size: 13px; color: #737373; text-align: center;">
-                        Sent by <strong>Aftermath</strong> — handling what comes after
+                        Sent by <strong>Clear Path</strong> — handling what comes after
                       </p>
                     </td>
                   </tr>
@@ -148,7 +148,7 @@ export async function POST(req: Request) {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            from: 'Aftermath <aftermath@resend.dev>',
+            from: 'Clear Path <clarity@resend.dev>',
             to: [to],
             subject,
             html: htmlBody,

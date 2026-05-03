@@ -9,8 +9,8 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: 'Aftermath - Estate Notification Assistant',
-  description: 'AI-powered assistance for families handling paperwork after a death. We draft the letters. We track the deadlines. You take care of your family.',
+  title: 'Clear Path - Estate Notification Assistant',
+  description: 'Clear guidance for families handling paperwork after a loss. We draft the letters. We track the deadlines. You take care of your family.',
   generator: 'v0.app',
   icons: {
     icon: [

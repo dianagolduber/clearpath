@@ -4,7 +4,7 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* Aftermath Design System */
+  /* Clear Path Design System */
   /* Cream background */
   --background: oklch(0.97 0.01 80);
   --foreground: oklch(0.20 0.02 250);
