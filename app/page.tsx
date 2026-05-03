@@ -101,8 +101,9 @@ export default function Home() {
   return (
     <main className="min-h-screen">
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border">
-        <div className="container mx-auto px-4 py-4">
-          <h1 className="font-serif text-3xl text-foreground">Clear Path</h1>
+        <div className="container mx-auto px-4 py-6">
+          <h1 className="font-serif text-4xl text-foreground mb-2">Clear Path</h1>
+          <p className="text-lg text-muted-foreground">Guiding families through what comes after a loss</p>
         </div>
       </div>
       <div className="container mx-auto px-4 py-8 sm:py-12 lg:py-16">
