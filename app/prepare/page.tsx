@@ -60,7 +60,20 @@ export default function PreparePage() {
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-2xl">
           <h2 className="font-serif text-3xl text-foreground mb-2">Prepare Your Information</h2>
-          <p className="text-muted-foreground mb-8">Store your estate details in one secure place and share access with trusted family members.</p>
+          <p className="text-muted-foreground mb-6">Store your estate details in one secure place and share access with trusted family members.</p>
+
+          {/* Security Notice */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8">
+            <div className="flex gap-3">
+              <div className="text-blue-600 font-bold text-lg">🔒</div>
+              <div>
+                <p className="font-medium text-blue-900 text-sm">Your information is secure</p>
+                <p className="text-blue-800 text-xs mt-1">
+                  All data is encrypted and stored securely. Only you and people you invite can access this information. We never sell or share your data.
+                </p>
+              </div>
+            </div>
+          </div>
 
           {error && <div className="bg-red-50 text-red-700 p-4 rounded-lg mb-6">{error}</div>}
 
