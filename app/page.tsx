@@ -102,7 +102,10 @@ export default function Home() {
     <main className="min-h-screen">
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border">
         <div className="container mx-auto px-4 py-6">
-          <h1 className="font-serif text-4xl text-foreground mb-2">Clear Path</h1>
+          <div className="flex items-center gap-3 mb-2">
+            <img src="/clear-path-logo.jpg" alt="Clear Path" className="h-8 w-8 object-contain" />
+            <h1 className="font-serif text-4xl text-foreground">Clear Path</h1>
+          </div>
           <p className="text-lg text-muted-foreground">Guiding families through what comes after a loss</p>
         </div>
       </div>
