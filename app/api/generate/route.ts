@@ -1,10 +1,31 @@
 import { streamObject } from 'ai'
 import { createOpenAI } from '@ai-sdk/openai'
 import { generationResponseSchema } from '@/lib/types'
+import { z } from 'zod'
 
 const openai = createOpenAI({
   baseURL: 'https://ai-gateway.vercel.sh/v1',
   apiKey: process.env.VERCEL_AI_GATEWAY_TOKEN,
+})
+
+const institutionsSchema = z.object({
+  institutions: z.array(z.object({
+    name: z.string(),
+    category: z.string(),
+    deadlineDays: z.number(),
+    urgency: z.enum(['urgent', 'soon', 'later']),
+    reasonForDeadline: z.string(),
+    letter: z.string(),
+    evidenceNeeded: z.array(z.string()),
+  })),
+})
+
+const memorialSchema = z.object({
+  memorialItems: z.array(z.object({
+    type: z.string(),
+    title: z.string(),
+    content: z.string(),
+  })),
 })
 
 export async function POST(req: Request) {
@@ -19,9 +40,9 @@ export async function POST(req: Request) {
       model: openai('anthropic/claude-sonnet-4-5'),
       system: `You are a compassionate estate administration assistant. Generate very concise, formal letters (100 words max each).
 
-Generate exactly 8 institutions and 3 memorial items.
+Generate exactly 5 institutions and 3 memorial items.
 
-## Institutions (exactly 8)
+## Institutions (exactly 5)
 For each: name, category, deadlineDays, urgency (urgent/soon/later), reasonForDeadline, letter (100 words max, formal business format), evidenceNeeded array.
 
 Priority order:
@@ -30,9 +51,6 @@ Priority order:
 3. Banks/financial institutions
 4. Insurance companies
 5. Employers/retirement accounts
-6. Utilities
-7. Credit card companies
-8. Other relevant institutions
 
 Keep all content very concise. Use relevant state laws and regulations where applicable.
 

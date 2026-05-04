@@ -194,8 +194,8 @@ export default function Home() {
               </div>
               <div className="flex-1 bg-card border border-border rounded-lg p-4 text-center">
                 <Mail className="mx-auto mb-3 text-muted-foreground" size={22} strokeWidth={1.5} />
-                <h3 className="font-medium text-foreground text-sm mb-1">Get 8 letters</h3>
-                <p className="text-xs text-muted-foreground">State-specific letters for banks, SSA, insurance, DMV, and more — prioritized by legal deadline.</p>
+                <h3 className="font-medium text-foreground text-sm mb-1">Get 5 letters</h3>
+                <p className="text-xs text-muted-foreground">State-specific letters for banks, SSA, insurance, and more — prioritized by legal deadline.</p>
               </div>
               <div className="hidden sm:flex items-center text-muted-foreground/40 shrink-0">
                 <ArrowRight size={18} />
