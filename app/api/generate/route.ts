@@ -1,31 +1,10 @@
-import { streamObject } from 'ai'
+import { generateObject } from 'ai'
 import { createOpenAI } from '@ai-sdk/openai'
 import { generationResponseSchema } from '@/lib/types'
-import { z } from 'zod'
 
 const openai = createOpenAI({
   baseURL: 'https://ai-gateway.vercel.sh/v1',
   apiKey: process.env.VERCEL_AI_GATEWAY_TOKEN,
-})
-
-const institutionsSchema = z.object({
-  institutions: z.array(z.object({
-    name: z.string(),
-    category: z.string(),
-    deadlineDays: z.number(),
-    urgency: z.enum(['urgent', 'soon', 'later']),
-    reasonForDeadline: z.string(),
-    letter: z.string(),
-    evidenceNeeded: z.array(z.string()),
-  })),
-})
-
-const memorialSchema = z.object({
-  memorialItems: z.array(z.object({
-    type: z.string(),
-    title: z.string(),
-    content: z.string(),
-  })),
 })
 
 export async function POST(req: Request) {
@@ -36,7 +15,7 @@ export async function POST(req: Request) {
       return Response.json({ error: 'Description is required' }, { status: 400 })
     }
 
-    const stream = streamObject({
+    const { object } = await generateObject({
       model: openai('anthropic/claude-sonnet-4-5'),
       system: `You are a compassionate estate administration assistant. Generate very concise, formal letters (100 words max each).
 
@@ -67,7 +46,10 @@ Keep all content very concise. Use relevant state laws and regulations where app
       ],
     })
 
-    return stream.toTextStreamResponse()
+    return Response.json({
+      institutions: object?.institutions ?? [],
+      memorialItems: object?.memorialItems ?? [],
+    })
   } catch (error) {
     console.error('[v0] Generation error:', error)
     const message = error instanceof Error ? error.message : 'Unknown error'

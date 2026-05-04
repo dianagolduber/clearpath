@@ -41,61 +41,15 @@ export default function Home() {
         body: JSON.stringify({ description }),
       })
       
+      const responseData = await response.json()
+      
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to generate letters')
+        throw new Error(responseData.error || 'Failed to generate letters')
       }
 
-      const reader = response.body?.getReader()
-      const decoder = new TextDecoder()
-      let buffer = ''
-
-      if (!reader) throw new Error('No response body')
-
-      while (true) {
-        const { done, value } = await reader.read()
-        if (done) break
-
-        buffer += decoder.decode(value, { stream: true })
-        const lines = buffer.split('\n')
-        buffer = lines[lines.length - 1]
-
-        for (let i = 0; i < lines.length - 1; i++) {
-          const line = lines[i].trim()
-          if (!line || line === 'd:') continue
-
-          try {
-            // Parse each streamed JSON object
-            const parsed = JSON.parse(line)
-            
-            if (parsed.institutions && Array.isArray(parsed.institutions)) {
-              const sorted = [...parsed.institutions].sort((a: Institution, b: Institution) => a.deadlineDays - b.deadlineDays)
-              setInstitutions(sorted)
-            }
-            if (parsed.memorialItems && Array.isArray(parsed.memorialItems)) {
-              setMemorialItems(parsed.memorialItems)
-            }
-          } catch (e) {
-            // Ignore parse errors from partial chunks
-          }
-        }
-      }
-
-      // Final flush
-      if (buffer.trim() && buffer !== 'd:') {
-        try {
-          const parsed = JSON.parse(buffer)
-          if (parsed.institutions && Array.isArray(parsed.institutions)) {
-            const sorted = [...parsed.institutions].sort((a: Institution, b: Institution) => a.deadlineDays - b.deadlineDays)
-            setInstitutions(sorted)
-          }
-          if (parsed.memorialItems && Array.isArray(parsed.memorialItems)) {
-            setMemorialItems(parsed.memorialItems)
-          }
-        } catch (e) {
-          // Ignore final parse error
-        }
-      }
+      const sorted = [...(responseData.institutions || [])].sort((a: Institution, b: Institution) => a.deadlineDays - b.deadlineDays)
+      setInstitutions(sorted)
+      setMemorialItems(responseData.memorialItems ?? [])
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
     } finally {
