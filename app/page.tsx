@@ -34,41 +34,36 @@ export default function Home() {
     setInstitutions([])
     setMemorialItems([])
     
-    try {
-      // Run both API calls in parallel
-      const [institutionsRes, memorialRes] = await Promise.all([
-        fetch('/api/generate/institutions', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ description }),
-        }),
-        fetch('/api/generate/memorial', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ description }),
-        }),
-      ])
-      
-      const [institutionsData, memorialData] = await Promise.all([
-        institutionsRes.json(),
-        memorialRes.json(),
-      ])
-      
-      if (!institutionsRes.ok) {
-        throw new Error(institutionsData.error || 'Failed to generate letters')
-      }
-      if (!memorialRes.ok) {
-        throw new Error(memorialData.error || 'Failed to generate memorial items')
-      }
-
-      const sorted = [...(institutionsData.institutions || [])].sort((a: Institution, b: Institution) => a.deadlineDays - b.deadlineDays)
+    // Fire both calls independently - each updates UI as soon as it returns
+    const institutionsPromise = fetch('/api/generate/institutions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ description }),
+    }).then(async (res) => {
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Failed to generate letters')
+      const sorted = [...(data.institutions || [])].sort((a: Institution, b: Institution) => a.deadlineDays - b.deadlineDays)
       setInstitutions(sorted)
-      setMemorialItems(memorialData.memorialItems ?? [])
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
-    } finally {
+    })
+
+    const memorialPromise = fetch('/api/generate/memorial', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ description }),
+    }).then(async (res) => {
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Failed to generate memorial items')
+      setMemorialItems(data.memorialItems ?? [])
+    })
+
+    // Wait for both to settle, but each updates UI independently
+    Promise.allSettled([institutionsPromise, memorialPromise]).then((results) => {
+      const failed = results.find(r => r.status === 'rejected') as PromiseRejectedResult | undefined
+      if (failed) {
+        setError(failed.reason?.message || 'An error occurred')
+      }
       setIsLoading(false)
-    }
+    })
   }
 
   const handleVerify = async (institutionName: string, index: number) => {
