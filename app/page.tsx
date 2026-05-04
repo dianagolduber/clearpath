@@ -34,27 +34,36 @@ export default function Home() {
     setInstitutions([])
     setMemorialItems([])
     
-    try {
-      const response = await fetch('/api/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ description }),
-      })
-      
-      const responseData = await response.json()
-      
-      if (!response.ok) {
-        throw new Error(responseData.error || 'Failed to generate letters')
-      }
-
-      const sorted = [...(responseData.institutions || [])].sort((a: Institution, b: Institution) => a.deadlineDays - b.deadlineDays)
+    // Fire both calls independently - each updates UI as soon as it returns
+    const institutionsPromise = fetch('/api/generate/institutions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ description }),
+    }).then(async (res) => {
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Failed to generate letters')
+      const sorted = [...(data.institutions || [])].sort((a: Institution, b: Institution) => a.deadlineDays - b.deadlineDays)
       setInstitutions(sorted)
-      setMemorialItems(responseData.memorialItems ?? [])
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
-    } finally {
+    })
+
+    const memorialPromise = fetch('/api/generate/memorial', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ description }),
+    }).then(async (res) => {
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Failed to generate memorial items')
+      setMemorialItems(data.memorialItems ?? [])
+    })
+
+    // Wait for both to settle, but each updates UI independently
+    Promise.allSettled([institutionsPromise, memorialPromise]).then((results) => {
+      const failed = results.find(r => r.status === 'rejected') as PromiseRejectedResult | undefined
+      if (failed) {
+        setError(failed.reason?.message || 'An error occurred')
+      }
       setIsLoading(false)
-    }
+    })
   }
 
   const handleVerify = async (institutionName: string, index: number) => {
@@ -148,8 +157,8 @@ export default function Home() {
               </div>
               <div className="flex-1 bg-card border border-border rounded-lg p-4 text-center">
                 <Mail className="mx-auto mb-3 text-muted-foreground" size={22} strokeWidth={1.5} />
-                <h3 className="font-medium text-foreground text-sm mb-1">Get 8 letters</h3>
-                <p className="text-xs text-muted-foreground">State-specific letters for banks, SSA, insurance, DMV, and more — prioritized by legal deadline.</p>
+                <h3 className="font-medium text-foreground text-sm mb-1">Get 5 letters</h3>
+                <p className="text-xs text-muted-foreground">State-specific letters for banks, SSA, insurance, and more — prioritized by legal deadline.</p>
               </div>
               <div className="hidden sm:flex items-center text-muted-foreground/40 shrink-0">
                 <ArrowRight size={18} />
@@ -162,6 +171,12 @@ export default function Home() {
             </div>
             
             <InputForm onSubmit={handleSubmit} isLoading={isLoading} />
+
+            <div className="w-full max-w-2xl p-4 bg-muted/50 border border-muted-foreground/20 rounded-lg text-center mt-8">
+              <p className="text-xs text-muted-foreground">
+                <strong>Clear Path</strong> drafts notification letters for financial institutions and government agencies. This is <strong>not</strong> a living trust or legal estate planning service. Consult an estate attorney for comprehensive estate planning.
+              </p>
+            </div>
 
             {error && (
               <div className="w-full max-w-2xl p-4 bg-destructive/10 border border-destructive/20 rounded-lg text-center">

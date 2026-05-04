@@ -1,6 +1,6 @@
 import { generateObject } from 'ai'
 import { createOpenAI } from '@ai-sdk/openai'
-import { generationResponseSchema } from '@/lib/types'
+import { institutionsResponseSchema } from '@/lib/types'
 
 const openai = createOpenAI({
   baseURL: 'https://ai-gateway.vercel.sh/v1',
@@ -16,10 +16,10 @@ export async function POST(req: Request) {
     }
 
     const { object } = await generateObject({
-      model: openai('anthropic/claude-sonnet-4-5'),
+      model: openai('gpt-4o-mini'),
       system: `You are a compassionate estate administration assistant. Generate very concise, formal letters (100 words max each).
 
-Generate exactly 5 institutions and 3 memorial items.
+Generate exactly 5 institutions.
 
 ## Institutions (exactly 5)
 For each: name, category, deadlineDays, urgency (urgent/soon/later), reasonForDeadline, letter (100 words max, formal business format), evidenceNeeded array.
@@ -31,13 +31,8 @@ Priority order:
 4. Insurance companies
 5. Employers/retirement accounts
 
-Keep all content very concise. Use relevant state laws and regulations where applicable.
-
-## Memorial Items (exactly 3)
-1. funeral_home — Brief formal letter to funeral home (80 words)
-2. obituary — Warm obituary (100 words)
-3. eulogy_opening — Heartfelt eulogy opening (120 words)`,
-      schema: generationResponseSchema,
+Keep all content very concise. Use relevant state laws and regulations where applicable.`,
+      schema: institutionsResponseSchema,
       messages: [
         {
           role: 'user',
@@ -48,10 +43,9 @@ Keep all content very concise. Use relevant state laws and regulations where app
 
     return Response.json({
       institutions: object?.institutions ?? [],
-      memorialItems: object?.memorialItems ?? [],
     })
   } catch (error) {
-    console.error('[v0] Generation error:', error)
+    console.error('[v0] Institutions generation error:', error)
     const message = error instanceof Error ? error.message : 'Unknown error'
     return Response.json({ error: `Failed to generate: ${message}` }, { status: 500 })
   }
