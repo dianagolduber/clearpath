@@ -16,8 +16,16 @@ export const memorialItemSchema = z.object({
   content: z.string().describe('The full text content — a formal letter, a 150-word obituary, or a 200-word eulogy opening paragraph'),
 })
 
+export const institutionsResponseSchema = z.object({
+  institutions: z.array(institutionSchema).length(5).describe('Exactly 5 prioritized institutions to contact'),
+})
+
+export const memorialResponseSchema = z.object({
+  memorialItems: z.array(memorialItemSchema).length(3).describe('Exactly 3 memorial items: funeral_home letter, obituary draft, and eulogy opening'),
+})
+
 export const generationResponseSchema = z.object({
-  institutions: z.array(institutionSchema).length(8).describe('Exactly 8 prioritized institutions to contact'),
+  institutions: z.array(institutionSchema).length(5).describe('Exactly 5 prioritized institutions to contact'),
   memorialItems: z.array(memorialItemSchema).length(3).describe('Exactly 3 memorial items: funeral_home letter, obituary draft, and eulogy opening'),
 })
 

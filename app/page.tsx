@@ -35,21 +35,35 @@ export default function Home() {
     setMemorialItems([])
     
     try {
-      const response = await fetch('/api/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ description }),
-      })
+      // Run both API calls in parallel
+      const [institutionsRes, memorialRes] = await Promise.all([
+        fetch('/api/generate/institutions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ description }),
+        }),
+        fetch('/api/generate/memorial', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ description }),
+        }),
+      ])
       
-      const responseData = await response.json()
+      const [institutionsData, memorialData] = await Promise.all([
+        institutionsRes.json(),
+        memorialRes.json(),
+      ])
       
-      if (!response.ok) {
-        throw new Error(responseData.error || 'Failed to generate letters')
+      if (!institutionsRes.ok) {
+        throw new Error(institutionsData.error || 'Failed to generate letters')
+      }
+      if (!memorialRes.ok) {
+        throw new Error(memorialData.error || 'Failed to generate memorial items')
       }
 
-      const sorted = [...(responseData.institutions || [])].sort((a: Institution, b: Institution) => a.deadlineDays - b.deadlineDays)
+      const sorted = [...(institutionsData.institutions || [])].sort((a: Institution, b: Institution) => a.deadlineDays - b.deadlineDays)
       setInstitutions(sorted)
-      setMemorialItems(responseData.memorialItems ?? [])
+      setMemorialItems(memorialData.memorialItems ?? [])
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
     } finally {
