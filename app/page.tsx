@@ -172,6 +172,12 @@ export default function Home() {
             
             <InputForm onSubmit={handleSubmit} isLoading={isLoading} />
 
+            <div className="w-full max-w-2xl p-4 bg-muted/50 border border-muted-foreground/20 rounded-lg text-center mt-8">
+              <p className="text-xs text-muted-foreground">
+                <strong>Clear Path</strong> drafts notification letters for financial institutions and government agencies. This is <strong>not</strong> a living trust or legal estate planning service. Consult an estate attorney for comprehensive estate planning.
+              </p>
+            </div>
+
             {error && (
               <div className="w-full max-w-2xl p-4 bg-destructive/10 border border-destructive/20 rounded-lg text-center">
                 <p className="text-destructive">{error}</p>
