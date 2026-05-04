@@ -16,7 +16,7 @@ export async function POST(req: Request) {
     }
 
     const { object } = await generateObject({
-      model: openai('anthropic/claude-sonnet-4-5'),
+      model: openai('anthropic/claude-3-5-haiku'),
       system: `You are a compassionate memorial writing assistant. Generate heartfelt, personalized memorial content.
 
 Generate exactly 3 memorial items:

@@ -17,7 +17,7 @@ export const memorialItemSchema = z.object({
 })
 
 export const institutionsResponseSchema = z.object({
-  institutions: z.array(institutionSchema).length(5).describe('Exactly 5 prioritized institutions to contact'),
+  institutions: z.array(institutionSchema).length(3).describe('Exactly 3 prioritized institutions to contact'),
 })
 
 export const memorialResponseSchema = z.object({
@@ -25,7 +25,7 @@ export const memorialResponseSchema = z.object({
 })
 
 export const generationResponseSchema = z.object({
-  institutions: z.array(institutionSchema).length(5).describe('Exactly 5 prioritized institutions to contact'),
+  institutions: z.array(institutionSchema).length(3).describe('Exactly 3 prioritized institutions to contact'),
   memorialItems: z.array(memorialItemSchema).length(3).describe('Exactly 3 memorial items: funeral_home letter, obituary draft, and eulogy opening'),
 })
 

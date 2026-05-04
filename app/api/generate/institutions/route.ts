@@ -16,20 +16,18 @@ export async function POST(req: Request) {
     }
 
     const { object } = await generateObject({
-      model: openai('anthropic/claude-sonnet-4-5'),
+      model: openai('anthropic/claude-3-5-haiku'),
       system: `You are a compassionate estate administration assistant. Generate very concise, formal letters (100 words max each).
 
-Generate exactly 5 institutions.
+Generate exactly 3 institutions.
 
-## Institutions (exactly 5)
+## Institutions (exactly 3)
 For each: name, category, deadlineDays, urgency (urgent/soon/later), reasonForDeadline, letter (100 words max, formal business format), evidenceNeeded array.
 
 Priority order:
 1. Social Security Administration (urgent)
-2. State department of revenue / state benefits
-3. Banks/financial institutions
-4. Insurance companies
-5. Employers/retirement accounts
+2. Banks/financial institutions
+3. Insurance companies
 
 Keep all content very concise. Use relevant state laws and regulations where applicable.`,
       schema: institutionsResponseSchema,
