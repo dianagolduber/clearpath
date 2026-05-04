@@ -49,8 +49,6 @@ export default function Home() {
       const reader = response.body?.getReader()
       const decoder = new TextDecoder()
       let buffer = ''
-      let partialInstitutions: Institution[] = []
-      let partialMemorial: MemorialItem[] = []
 
       if (!reader) throw new Error('No response body')
 
@@ -64,44 +62,35 @@ export default function Home() {
 
         for (let i = 0; i < lines.length - 1; i++) {
           const line = lines[i].trim()
-          if (!line) continue
+          if (!line || line === 'd:') continue
 
           try {
+            // Parse each streamed JSON object
             const parsed = JSON.parse(line)
             
-            if (parsed.type === 'object') {
-              const { object } = parsed
-              if (object?.institutions) {
-                partialInstitutions = object.institutions
-                const sorted = [...partialInstitutions].sort((a: Institution, b: Institution) => a.deadlineDays - b.deadlineDays)
-                setInstitutions(sorted)
-              }
-              if (object?.memorialItems) {
-                partialMemorial = object.memorialItems
-                setMemorialItems(partialMemorial)
-              }
+            if (parsed.institutions && Array.isArray(parsed.institutions)) {
+              const sorted = [...parsed.institutions].sort((a: Institution, b: Institution) => a.deadlineDays - b.deadlineDays)
+              setInstitutions(sorted)
+            }
+            if (parsed.memorialItems && Array.isArray(parsed.memorialItems)) {
+              setMemorialItems(parsed.memorialItems)
             }
           } catch (e) {
-            // Ignore parse errors, continue reading
+            // Ignore parse errors from partial chunks
           }
         }
       }
 
       // Final flush
-      if (buffer.trim()) {
+      if (buffer.trim() && buffer !== 'd:') {
         try {
           const parsed = JSON.parse(buffer)
-          if (parsed.type === 'object') {
-            const { object } = parsed
-            if (object?.institutions) {
-              partialInstitutions = object.institutions
-              const sorted = [...partialInstitutions].sort((a: Institution, b: Institution) => a.deadlineDays - b.deadlineDays)
-              setInstitutions(sorted)
-            }
-            if (object?.memorialItems) {
-              partialMemorial = object.memorialItems
-              setMemorialItems(partialMemorial)
-            }
+          if (parsed.institutions && Array.isArray(parsed.institutions)) {
+            const sorted = [...parsed.institutions].sort((a: Institution, b: Institution) => a.deadlineDays - b.deadlineDays)
+            setInstitutions(sorted)
+          }
+          if (parsed.memorialItems && Array.isArray(parsed.memorialItems)) {
+            setMemorialItems(parsed.memorialItems)
           }
         } catch (e) {
           // Ignore final parse error

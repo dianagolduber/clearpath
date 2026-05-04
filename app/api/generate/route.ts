@@ -1,4 +1,4 @@
-import { streamText, Output } from 'ai'
+import { streamObject } from 'ai'
 import { createOpenAI } from '@ai-sdk/openai'
 import { generationResponseSchema } from '@/lib/types'
 
@@ -15,7 +15,7 @@ export async function POST(req: Request) {
       return Response.json({ error: 'Description is required' }, { status: 400 })
     }
 
-    const stream = streamText({
+    const stream = streamObject({
       model: openai('anthropic/claude-sonnet-4-5'),
       system: `You are a compassionate estate administration assistant. Generate very concise, formal letters (100 words max each).
 
@@ -40,9 +40,7 @@ Keep all content very concise. Use relevant state laws and regulations where app
 1. funeral_home — Brief formal letter to funeral home (80 words)
 2. obituary — Warm obituary (100 words)
 3. eulogy_opening — Heartfelt eulogy opening (120 words)`,
-      output: Output.object({
-        schema: generationResponseSchema,
-      }),
+      schema: generationResponseSchema,
       messages: [
         {
           role: 'user',
