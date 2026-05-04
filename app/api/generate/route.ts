@@ -1,4 +1,4 @@
-import { generateText, Output } from 'ai'
+import { streamText, Output } from 'ai'
 import { createOpenAI } from '@ai-sdk/openai'
 import { generationResponseSchema } from '@/lib/types'
 
@@ -15,7 +15,7 @@ export async function POST(req: Request) {
       return Response.json({ error: 'Description is required' }, { status: 400 })
     }
 
-    const { output } = await generateText({
+    const stream = streamText({
       model: openai('anthropic/claude-sonnet-4-5'),
       system: `You are a compassionate estate administration assistant. Generate very concise, formal letters (100 words max each).
 
@@ -51,10 +51,7 @@ Keep all content very concise. Use relevant state laws and regulations where app
       ],
     })
 
-    return Response.json({
-      institutions: output?.institutions ?? [],
-      memorialItems: output?.memorialItems ?? [],
-    })
+    return stream.toTextStreamResponse()
   } catch (error) {
     console.error('[v0] Generation error:', error)
     const message = error instanceof Error ? error.message : 'Unknown error'
