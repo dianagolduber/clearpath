@@ -89,7 +89,7 @@ export default function PreparePage() {
                   placeholder="Your full name"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-2">State</label>
                   <Input value={state} onChange={(e) => setState(e.target.value)} placeholder="CA" />
@@ -112,7 +112,7 @@ export default function PreparePage() {
             <div className="space-y-4">
               {accounts.map((account, idx) => (
                 <div key={idx} className="p-4 border border-border rounded-lg space-y-3">
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="block text-sm font-medium mb-1">Type</label>
                       <select
@@ -186,7 +186,7 @@ export default function PreparePage() {
             <div className="space-y-4">
               {contacts.map((contact, idx) => (
                 <div key={idx} className="p-4 border border-border rounded-lg space-y-3">
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="block text-sm font-medium mb-1">Type</label>
                       <select
@@ -218,7 +218,7 @@ export default function PreparePage() {
                       />
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="block text-sm font-medium mb-1">Phone</label>
                       <Input
@@ -296,7 +296,7 @@ export default function PreparePage() {
             <h3 className="font-semibold text-foreground mb-4">Share With (Up to 5 People)</h3>
             <div className="space-y-4">
               {trustedContacts.map((trusted, idx) => (
-                <div key={idx} className="grid grid-cols-2 gap-3">
+                <div key={idx} className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <Input
                     value={trusted.name}
                     onChange={(e) => {

@@ -134,15 +134,16 @@ export default function Home() {
           </div>
         ) : institutions.length === 0 ? (
           <div className="flex flex-col items-center gap-8 sm:gap-12">
-            <header className="text-center max-w-2xl">
-              <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl text-foreground leading-tight mb-4 max-w-2xl">
+            <header className="text-center max-w-2xl px-2">
+              <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl text-foreground leading-tight mb-4 max-w-2xl text-balance">
                 Losing someone is hard.
                 <br />
-                <span className="whitespace-nowrap">The paperwork doesn&apos;t have to be.</span>
+                The paperwork doesn&apos;t have to be.
               </h1>
-              <p className="text-lg sm:text-xl text-muted-foreground leading-relaxed">
-                <span className="whitespace-nowrap block">We draft the letters. We track the deadlines.</span>
-                <span className="whitespace-nowrap block">You take care of your family.</span>
+              <p className="text-lg sm:text-xl text-muted-foreground leading-relaxed text-pretty">
+                We draft the letters. We track the deadlines.
+                <br className="hidden sm:block" />
+                {' '}You take care of your family.
               </p>
             </header>
 
