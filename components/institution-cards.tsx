@@ -644,11 +644,11 @@ export function InstitutionCards({ institutions, memorialItems, onVerify, onStar
                   key={member.id}
                   className="flex items-center justify-between p-2 bg-background border border-border rounded-lg"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-2 h-2 rounded-full ${taskCount > 0 ? 'bg-green-500' : 'bg-gray-300'}`} />
-                    <div>
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className={`w-2 h-2 rounded-full shrink-0 ${taskCount > 0 ? 'bg-green-500' : 'bg-gray-300'}`} />
+                    <div className="min-w-0">
                       <span className="text-sm font-medium text-foreground">{member.name}</span>
-                      <span className="text-xs text-muted-foreground ml-2">{member.email}</span>
+                      <span className="text-xs text-muted-foreground ml-2 truncate block sm:inline">{member.email}</span>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
@@ -680,7 +680,12 @@ export function InstitutionCards({ institutions, memorialItems, onVerify, onStar
               {isSending ? (
                 <><Spinner className="mr-2 h-4 w-4" /> Sending...</>
               ) : (
-                <><Mail className="mr-2 h-4 w-4" /> Send Assignments ({totalAssignments} task{totalAssignments !== 1 ? 's' : ''} to {membersWithTasks.length} person{membersWithTasks.length !== 1 ? 's' : ''})</>
+                <>
+                  <Mail className="mr-2 h-4 w-4 shrink-0" />
+                  <span className="truncate">
+                    Send Assignments ({totalAssignments} task{totalAssignments !== 1 ? 's' : ''} to {membersWithTasks.length} person{membersWithTasks.length !== 1 ? 's' : ''})
+                  </span>
+                </>
               )}
             </Button>
           </div>

@@ -176,12 +176,12 @@ export default function PortalPage() {
       {/* Header */}
       <header className="bg-white border-b border-border">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
+          <div className="flex items-center justify-between gap-3 min-w-0">
+            <div className="flex items-center gap-2 shrink-0">
               <img src="/clear-path-logo.jpg" alt="Clear Path" className="h-6 w-6 object-contain" />
               <h1 className="font-serif text-xl text-foreground">Clear Path</h1>
             </div>
-            <span className="text-sm text-muted-foreground">
+            <span className="text-sm text-muted-foreground text-right truncate">
               Handling affairs for {data.deceasedName}
             </span>
           </div>
